@@ -1,17 +1,47 @@
-import { TrendingUp, TrendingDown } from "lucide-react";
-
-const tickers = [
-  { symbol: "IBOV", value: "128.450", change: "+1.24%", positive: true },
-  { symbol: "S&P 500", value: "5.234", change: "+0.45%", positive: true },
-  { symbol: "NASDAQ", value: "16.780", change: "+0.82%", positive: true },
-  { symbol: "BTC/USD", value: "68.542", change: "-1.20%", positive: false },
-  { symbol: "USD/BRL", value: "4.9250", change: "+0.15%", positive: true },
-  { symbol: "EUR/BRL", value: "5.3420", change: "-0.08%", positive: false },
-  { symbol: "PETR4", value: "38.45", change: "+2.15%", positive: true },
-  { symbol: "VALE3", value: "62.80", change: "-0.45%", positive: false },
-];
+import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import { useMarketTicker } from "@/hooks/useMarketData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function MarketTicker() {
+  const { data: quotes, isLoading } = useMarketTicker();
+
+  // Formatar dados para exibição
+  const tickers = quotes?.map(quote => ({
+    symbol: quote.symbol,
+    value: quote.price.toLocaleString('pt-BR', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    }),
+    change: `${quote.changePercent >= 0 ? '+' : ''}${quote.changePercent.toFixed(2)}%`,
+    positive: quote.changePercent >= 0,
+  })) || [];
+
+  if (isLoading) {
+    return (
+      <div className="bg-sidebar text-sidebar-foreground overflow-hidden py-3">
+        <div className="flex items-center gap-6 px-6">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">Carregando cotações...</span>
+          <div className="flex gap-6">
+            {[1, 2, 3, 4].map(i => (
+              <Skeleton key={i} className="h-5 w-24" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (tickers.length === 0) {
+    return (
+      <div className="bg-sidebar text-sidebar-foreground overflow-hidden py-3">
+        <div className="flex items-center gap-6 px-6">
+          <span className="text-sm text-muted-foreground">Dados de mercado indisponíveis</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-sidebar text-sidebar-foreground overflow-hidden py-3">
       <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap">

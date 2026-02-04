@@ -1,34 +1,36 @@
 import { useState } from "react";
-import { TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useMarketOverview } from "@/hooks/useMarketData";
+import { MarketQuote } from "@/services/marketData";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const indices = [
-  { name: "Ibovespa", symbol: "IBOV", value: "128.450", change: -4.910, changePercent: -2.64 },
-  { name: "IBrX 50", symbol: "IBRX50", value: "30.436,73", change: -802.11, changePercent: -2.57 },
-  { name: "Dow Jones", symbol: "DJI", value: "49.178,71", change: -62.28, changePercent: -0.13 },
-  { name: "S&P 500", symbol: "SPX", value: "5.234,18", change: 12.45, changePercent: 0.24 },
-  { name: "Nasdaq", symbol: "IXIC", value: "16.780,32", change: 89.21, changePercent: 0.53 },
-];
+function MarketTable({ data, isLoading }: { data: MarketQuote[]; isLoading?: boolean }) {
+  if (isLoading) {
+    return (
+      <div className="p-4 space-y-3">
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="flex justify-between items-center">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-6 w-20" />
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-const stocks = [
-  { name: "Petrobras", symbol: "PETR4", value: "38.45", change: 0.82, changePercent: 2.18 },
-  { name: "Vale", symbol: "VALE3", value: "62.80", change: -0.45, changePercent: -0.71 },
-  { name: "Itaú", symbol: "ITUB4", value: "28.92", change: 0.35, changePercent: 1.22 },
-  { name: "Banco do Brasil", symbol: "BBAS3", value: "52.10", change: -0.78, changePercent: -1.47 },
-  { name: "Ambev", symbol: "ABEV3", value: "12.45", change: 0.12, changePercent: 0.97 },
-];
+  if (data.length === 0) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        <p>Dados não disponíveis</p>
+      </div>
+    );
+  }
 
-const crypto = [
-  { name: "Bitcoin", symbol: "BTC", value: "68.542", change: -1842, changePercent: -2.62 },
-  { name: "Ethereum", symbol: "ETH", value: "3.845", change: 45.20, changePercent: 1.19 },
-  { name: "Solana", symbol: "SOL", value: "142.50", change: -3.20, changePercent: -2.20 },
-  { name: "BNB", symbol: "BNB", value: "584.30", change: 12.80, changePercent: 2.24 },
-  { name: "XRP", symbol: "XRP", value: "0.5234", change: -0.012, changePercent: -2.24 },
-];
-
-function MarketTable({ data }: { data: typeof indices }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -61,7 +63,8 @@ function MarketTable({ data }: { data: typeof indices }) {
                 </div>
               </td>
               <td className="text-right py-4 px-4 font-mono font-medium text-foreground">
-                {item.value}
+                {item.currency === 'BRL' ? 'R$ ' : '$ '}
+                {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
               <td
                 className={`text-right py-4 px-4 font-mono ${
@@ -69,7 +72,7 @@ function MarketTable({ data }: { data: typeof indices }) {
                 }`}
               >
                 {item.change >= 0 ? "+" : ""}
-                {item.change.toLocaleString("pt-BR")}
+                {item.change.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
               <td className="text-right py-4 px-4">
                 <span
@@ -97,6 +100,8 @@ function MarketTable({ data }: { data: typeof indices }) {
 }
 
 export function MarketOverview() {
+  const { brStocks, usStocks, isLoading } = useMarketOverview();
+
   return (
     <section className="py-6 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -116,38 +121,29 @@ export function MarketOverview() {
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <Tabs defaultValue="indices" className="w-full">
+          <Tabs defaultValue="acoes-br" className="w-full">
             <div className="border-b border-border px-4">
               <TabsList className="h-14 bg-transparent gap-4">
                 <TabsTrigger
-                  value="indices"
+                  value="acoes-br"
                   className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent"
                 >
-                  Índices
+                  Ações BR
                 </TabsTrigger>
                 <TabsTrigger
-                  value="acoes"
+                  value="acoes-us"
                   className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent"
                 >
-                  Ações
-                </TabsTrigger>
-                <TabsTrigger
-                  value="crypto"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none bg-transparent"
-                >
-                  Criptomoedas
+                  Ações US
                 </TabsTrigger>
               </TabsList>
             </div>
 
-            <TabsContent value="indices" className="m-0">
-              <MarketTable data={indices} />
+            <TabsContent value="acoes-br" className="m-0">
+              <MarketTable data={brStocks.data} isLoading={brStocks.isLoading} />
             </TabsContent>
-            <TabsContent value="acoes" className="m-0">
-              <MarketTable data={stocks} />
-            </TabsContent>
-            <TabsContent value="crypto" className="m-0">
-              <MarketTable data={crypto} />
+            <TabsContent value="acoes-us" className="m-0">
+              <MarketTable data={usStocks.data} isLoading={usStocks.isLoading} />
             </TabsContent>
           </Tabs>
         </div>

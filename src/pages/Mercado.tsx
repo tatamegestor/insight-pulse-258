@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Search, Filter, TrendingUp, TrendingDown, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -18,12 +18,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
-import { getMultipleStockQuotes, StockQuote, clearCache } from "@/services/alphaVantage";
-import { Progress } from "@/components/ui/progress";
+import { useBrazilianStocks, useUSStocks } from "@/hooks/useMarketData";
+import { useQueryClient } from "@tanstack/react-query";
+import { MarketQuote } from "@/services/marketData";
 
-// Lista reduzida de ações para respeitar limite da API
-const monitoredStocks = [
+// Lista de ações brasileiras
+const brStocks = [
+  { symbol: "PETR4", name: "Petrobras", sector: "Energia", logo: "🛢️" },
+  { symbol: "VALE3", name: "Vale", sector: "Mineração", logo: "⛏️" },
+  { symbol: "ITUB4", name: "Itaú Unibanco", sector: "Financeiro", logo: "🏦" },
+  { symbol: "BBDC4", name: "Bradesco", sector: "Financeiro", logo: "🏦" },
+  { symbol: "ABEV3", name: "Ambev", sector: "Bebidas", logo: "🍺" },
+];
+
+// Lista de ações americanas
+const usStocks = [
   { symbol: "AAPL", name: "Apple Inc.", sector: "Tecnologia", logo: "🍎" },
   { symbol: "MSFT", name: "Microsoft", sector: "Tecnologia", logo: "💻" },
   { symbol: "GOOGL", name: "Alphabet (Google)", sector: "Tecnologia", logo: "🔍" },
@@ -32,40 +43,35 @@ const monitoredStocks = [
   { symbol: "NVDA", name: "NVIDIA", sector: "Tecnologia", logo: "🎮" },
 ];
 
-const sectors = ["Todos", "Tecnologia", "Varejo", "Automotivo"];
+const sectors = ["Todos", "Tecnologia", "Varejo", "Automotivo", "Energia", "Mineração", "Financeiro", "Bebidas"];
 
 export default function Mercado() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSector, setSelectedSector] = useState("Todos");
-  const [quotes, setQuotes] = useState<Map<string, StockQuote>>(new Map());
-  const [loadedCount, setLoadedCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("br");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const fetchAllQuotes = useCallback(async (forceRefresh = false) => {
-    setIsLoading(true);
-    setLoadedCount(0);
-    
-    if (forceRefresh) {
-      clearCache();
-      setQuotes(new Map());
-    }
+  // Buscar dados reais
+  const { data: brQuotes, isLoading: brLoading } = useBrazilianStocks(brStocks.map(s => s.symbol));
+  const { data: usQuotes, isLoading: usLoading } = useUSStocks(usStocks.map(s => s.symbol));
 
-    const symbols = monitoredStocks.map(s => s.symbol);
-    
-    await getMultipleStockQuotes(symbols, (loaded, total, data) => {
-      setLoadedCount(loaded);
-      setQuotes(new Map(data));
-    });
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['brazilianStocks'] });
+    queryClient.invalidateQueries({ queryKey: ['usStocks'] });
+  };
 
-    setIsLoading(false);
-  }, []);
+  const getStockList = () => {
+    return activeTab === "br" ? brStocks : usStocks;
+  };
 
-  useEffect(() => {
-    fetchAllQuotes();
-  }, [fetchAllQuotes]);
+  const getQuotes = (): MarketQuote[] => {
+    return activeTab === "br" ? (brQuotes || []) : (usQuotes || []);
+  };
 
-  const filteredStocks = monitoredStocks.filter((stock) => {
+  const isLoading = activeTab === "br" ? brLoading : usLoading;
+
+  const filteredStocks = getStockList().filter((stock) => {
     const matchesSearch =
       stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stock.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -74,17 +80,13 @@ export default function Mercado() {
     return matchesSearch && matchesSector;
   });
 
-  const formatPrice = (quote: StockQuote | undefined) => {
+  const quotesMap = new Map(getQuotes().map(q => [q.symbol, q]));
+
+  const formatPrice = (quote: MarketQuote | undefined) => {
     if (!quote) return "—";
-    return `$ ${quote.price.toFixed(2)}`;
+    const currency = quote.currency === 'BRL' ? 'R$' : '$';
+    return `${currency} ${quote.price.toFixed(2)}`;
   };
-
-  const formatChange = (quote: StockQuote | undefined) => {
-    if (!quote) return null;
-    return parseFloat(quote.changePercent.replace('%', ''));
-  };
-
-  const progress = (loadedCount / monitoredStocks.length) * 100;
 
   return (
     <DashboardLayout>
@@ -95,13 +97,13 @@ export default function Mercado() {
             <div>
               <h1 className="text-3xl font-bold text-foreground">Mercado</h1>
               <p className="text-muted-foreground mt-1">
-                Cotações em tempo real via Alpha Vantage
+                Cotações em tempo real via brapi.dev e FMP
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => fetchAllQuotes(true)}
+              onClick={handleRefresh}
               disabled={isLoading}
               className="gap-2"
             >
@@ -110,6 +112,18 @@ export default function Mercado() {
             </Button>
           </div>
         </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="animate-fade-in">
+          <TabsList className="bg-muted/50 border border-border">
+            <TabsTrigger value="br" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              🇧🇷 Brasil (B3)
+            </TabsTrigger>
+            <TabsTrigger value="us" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              🇺🇸 EUA (NASDAQ/NYSE)
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -137,19 +151,15 @@ export default function Mercado() {
           </Select>
         </div>
 
-        {/* Loading Progress */}
+        {/* Loading */}
         {isLoading && (
           <div className="glass-card p-4 animate-fade-in">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3">
               <Loader2 className="h-4 w-4 animate-spin text-primary" />
               <span className="text-sm text-muted-foreground">
-                Carregando cotações... {loadedCount}/{monitoredStocks.length}
+                Carregando cotações {activeTab === "br" ? "brasileiras" : "americanas"}...
               </span>
             </div>
-            <Progress value={progress} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">
-              API gratuita: 1 requisição por segundo. Dados são cacheados por 5 minutos.
-            </p>
           </div>
         )}
 
@@ -168,9 +178,9 @@ export default function Mercado() {
             </TableHeader>
             <TableBody>
               {filteredStocks.map((stock) => {
-                const quote = quotes.get(stock.symbol);
-                const change = formatChange(quote);
-                const isPositive = change !== null && change >= 0;
+                const quote = quotesMap.get(stock.symbol);
+                const change = quote?.changePercent || 0;
+                const isPositive = change >= 0;
                 const hasData = quote !== undefined;
                 
                 return (
@@ -198,7 +208,7 @@ export default function Mercado() {
                     <TableCell className="text-right">
                       {!hasData && isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin ml-auto" />
-                      ) : change !== null ? (
+                      ) : hasData ? (
                         <span
                           className={`inline-flex items-center gap-1 font-mono font-medium ${
                             isPositive ? "text-success" : "text-destructive"

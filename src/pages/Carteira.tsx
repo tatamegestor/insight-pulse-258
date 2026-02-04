@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { usePortfolio, PortfolioItem, PortfolioInput } from "@/hooks/usePortfolio";
 import { StockFormDialog } from "@/components/portfolio/StockFormDialog";
 import { useToast } from "@/hooks/use-toast";
-import { getStockQuote } from "@/services/alphaVantage";
+import { getStockQuote, detectMarket } from "@/services/marketData";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Carteira() {
@@ -18,11 +18,14 @@ export default function Carteira() {
   const { data: currentPrices } = useQuery({
     queryKey: ['portfolioPrices', portfolio.map(s => s.symbol).join(',')],
     queryFn: async () => {
-      const prices: Record<string, number> = {};
+      const prices: Record<string, { price: number; currency: string }> = {};
       for (const stock of portfolio) {
         const quote = await getStockQuote(stock.symbol);
         if (quote) {
-          prices[stock.symbol] = quote.price;
+          prices[stock.symbol] = { 
+            price: quote.price, 
+            currency: quote.currency 
+          };
         }
       }
       return prices;
@@ -103,7 +106,7 @@ export default function Carteira() {
 
     portfolio.forEach((stock) => {
       const invested = stock.quantity * stock.avg_price;
-      const currentPrice = currentPrices?.[stock.symbol] || stock.avg_price;
+      const currentPrice = currentPrices?.[stock.symbol]?.price || stock.avg_price;
       const current = stock.quantity * currentPrice;
       
       totalInvested += invested;
@@ -136,7 +139,7 @@ export default function Carteira() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Minha Carteira</h1>
             <p className="text-muted-foreground mt-1">
-              Acompanhe seus investimentos e rentabilidade
+              Acompanhe seus investimentos com preços em tempo real
             </p>
           </div>
           <Button onClick={openAddDialog} className="gap-2">
@@ -227,7 +230,12 @@ export default function Carteira() {
                 </thead>
                 <tbody>
                   {portfolio.map((stock) => {
-                    const currentPrice = currentPrices?.[stock.symbol] || stock.avg_price;
+                    const priceInfo = currentPrices?.[stock.symbol];
+                    const currentPrice = priceInfo?.price || stock.avg_price;
+                    const currency = priceInfo?.currency || 'USD';
+                    const currencySymbol = currency === 'BRL' ? 'R$' : '$';
+                    const market = detectMarket(stock.symbol);
+                    
                     const totalValue = stock.quantity * currentPrice;
                     const profit = (currentPrice - stock.avg_price) * stock.quantity;
                     const profitPercent =
@@ -243,7 +251,12 @@ export default function Carteira() {
                           <div className="flex items-center gap-2">
                             <span className="text-xl">{stock.logo}</span>
                             <div>
-                              <span className="ticker-badge">{stock.symbol}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="ticker-badge">{stock.symbol}</span>
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                  {market === 'BR' ? '🇧🇷' : '🇺🇸'}
+                                </span>
+                              </div>
                               <p className="text-xs text-muted-foreground mt-1">
                                 {stock.name}
                               </p>
@@ -254,13 +267,13 @@ export default function Carteira() {
                           {stock.quantity}
                         </td>
                         <td className="p-4 text-right font-mono text-muted-foreground">
-                          $ {stock.avg_price.toFixed(2)}
+                          {currencySymbol} {stock.avg_price.toFixed(2)}
                         </td>
                         <td className="p-4 text-right font-mono text-foreground">
-                          $ {currentPrice.toFixed(2)}
+                          {currencySymbol} {currentPrice.toFixed(2)}
                         </td>
                         <td className="p-4 text-right font-mono font-medium text-foreground">
-                          $ {totalValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                          {currencySymbol} {totalValue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         </td>
                         <td className="p-4 text-right">
                           <div
