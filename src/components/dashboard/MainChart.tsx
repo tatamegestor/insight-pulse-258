@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from "react";
 import {
   XAxis,
   YAxis,
@@ -9,9 +8,10 @@ import {
   AreaChart,
 } from "recharts";
 import { TrendingUp, TrendingDown, Clock, Loader2, RefreshCw } from "lucide-react";
-import { getStockQuote, getDailyTimeSeries, StockQuote, TimeSeriesData, clearCache } from "@/services/alphaVantage";
+import { useMainChartData } from "@/hooks/useMarketData";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -30,46 +30,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const DEFAULT_SYMBOL = "AAPL";
 
 export function MainChart() {
-  const [quote, setQuote] = useState<StockQuote | null>(null);
-  const [timeSeries, setTimeSeries] = useState<TimeSeriesData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { quote, history, isLoading, error } = useMainChartData(DEFAULT_SYMBOL);
+  const queryClient = useQueryClient();
 
-  const fetchData = useCallback(async (forceRefresh = false) => {
-    setIsLoading(true);
-    setError(null);
-    
-    if (forceRefresh) {
-      clearCache();
-    }
-    
-    try {
-      // Buscar cotação atual
-      const quoteData = await getStockQuote(DEFAULT_SYMBOL);
-      if (quoteData) {
-        setQuote(quoteData);
-      }
-      
-      // Buscar dados históricos
-      const timeSeriesData = await getDailyTimeSeries(DEFAULT_SYMBOL, 'compact');
-      if (timeSeriesData.length > 0) {
-        setTimeSeries(timeSeriesData);
-      } else if (!quoteData) {
-        setError("Aguardando dados da API. Limite de requisições pode ter sido atingido.");
-      }
-    } catch (err) {
-      setError("Erro ao carregar dados");
-    }
-    
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['stockQuote', DEFAULT_SYMBOL] });
+    queryClient.invalidateQueries({ queryKey: ['stockHistory', DEFAULT_SYMBOL] });
+  };
 
   // Preparar dados do gráfico
-  const chartData = timeSeries
+  const chartData = history
     .slice(0, 20)
     .reverse()
     .map(item => ({
@@ -92,7 +62,7 @@ export function MainChart() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                 </span>
-                Atualizado
+                Dados reais
               </span>
             )}
           </div>
@@ -113,7 +83,7 @@ export function MainChart() {
                   }`}
                 >
                   {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                  {quote.changePercent}
+                  {isPositive ? '+' : ''}{quote.changePercent.toFixed(2)}%
                 </span>
               </>
             ) : (
@@ -129,7 +99,7 @@ export function MainChart() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => fetchData(true)}
+            onClick={handleRefresh}
             disabled={isLoading}
             className="h-8 w-8"
             title="Atualizar dados"
@@ -141,7 +111,7 @@ export function MainChart() {
 
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-warning/10 border border-warning/20 text-warning text-sm">
-          {error}
+          Erro ao carregar dados. Tente novamente.
         </div>
       )}
 
@@ -190,17 +160,13 @@ export function MainChart() {
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
               <span className="text-muted-foreground">Carregando gráfico...</span>
-              <p className="text-xs text-muted-foreground mt-2">
-                Respeitando limite da API (1 req/seg)
-              </p>
             </div>
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <p>Aguardando dados do gráfico...</p>
-              <p className="text-xs mt-1">Os dados serão carregados em breve</p>
-              <Button variant="outline" size="sm" onClick={() => fetchData(true)} className="mt-3">
+              <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-3">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Tentar novamente
               </Button>

@@ -12,16 +12,19 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { useStockQuote, useDailyTimeSeries } from "@/hooks/useStockData";
+import { useStockQuote, useStockHistory, detectMarket } from "@/hooks/useMarketData";
 import { format } from "date-fns";
 
 // Mapeamento de símbolos para metadados
 const stockMetadata: Record<string, { name: string; sector: string; logo: string }> = {
-  "VALE": { name: "Vale S.A.", sector: "Mineração", logo: "⛏️" },
-  "PBR": { name: "Petrobras", sector: "Petróleo", logo: "🛢️" },
-  "ITUB": { name: "Itaú Unibanco", sector: "Financeiro", logo: "🏦" },
-  "BBD": { name: "Bradesco", sector: "Financeiro", logo: "🏦" },
-  "ABEV": { name: "Ambev", sector: "Bebidas", logo: "🍺" },
+  // Brasileiras
+  "PETR4": { name: "Petrobras", sector: "Energia", logo: "🛢️" },
+  "VALE3": { name: "Vale", sector: "Mineração", logo: "⛏️" },
+  "ITUB4": { name: "Itaú Unibanco", sector: "Financeiro", logo: "🏦" },
+  "BBDC4": { name: "Bradesco", sector: "Financeiro", logo: "🏦" },
+  "ABEV3": { name: "Ambev", sector: "Bebidas", logo: "🍺" },
+  "MGLU3": { name: "Magazine Luiza", sector: "Varejo", logo: "🛒" },
+  // Americanas
   "AAPL": { name: "Apple Inc.", sector: "Tecnologia", logo: "🍎" },
   "MSFT": { name: "Microsoft", sector: "Tecnologia", logo: "💻" },
   "GOOGL": { name: "Alphabet (Google)", sector: "Tecnologia", logo: "🔍" },
@@ -49,12 +52,14 @@ export default function AcaoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const symbol = id?.toUpperCase() || "AAPL";
+  const market = detectMarket(symbol);
 
   const { data: quote, isLoading: quoteLoading } = useStockQuote(symbol);
-  const { data: timeSeries, isLoading: timeSeriesLoading } = useDailyTimeSeries(symbol, 'compact');
+  const { data: timeSeries, isLoading: timeSeriesLoading } = useStockHistory(symbol, market);
 
-  const metadata = stockMetadata[symbol] || { name: symbol, sector: "Desconhecido", logo: "📈" };
+  const metadata = stockMetadata[symbol] || { name: quote?.name || symbol, sector: "Desconhecido", logo: "📈" };
   const isPositive = quote ? quote.change >= 0 : true;
+  const currencySymbol = market === 'BR' ? 'R$' : '$';
 
   // Preparar dados do gráfico (últimos 30 dias, ordenado)
   const chartData = timeSeries
@@ -74,15 +79,15 @@ export default function AcaoDetalhes() {
 
   // Gerar insights baseados nos dados reais
   const generateInsights = () => {
-    if (!quote || !timeSeries?.length) return [];
+    if (!quote) return [];
     
     const insights = [];
-    const changePercent = parseFloat(quote.changePercent.replace('%', ''));
+    const changePercent = quote.changePercent;
     
     if (changePercent > 2) {
       insights.push({
         type: "positive",
-        text: `${symbol} subiu ${changePercent.toFixed(2)}% hoje, indicando forte momentum de alta. O preço atual de $${quote.price.toFixed(2)} está acima da média recente.`,
+        text: `${symbol} subiu ${changePercent.toFixed(2)}% hoje, indicando forte momentum de alta. O preço atual de ${currencySymbol}${quote.price.toFixed(2)} está acima da média recente.`,
       });
     } else if (changePercent < -2) {
       insights.push({
@@ -91,28 +96,29 @@ export default function AcaoDetalhes() {
       });
     }
 
-    if (quote.volume > avgVolume * 1.5) {
+    if (avgVolume > 0 && quote.volume > avgVolume * 1.5) {
       insights.push({
         type: "positive",
         text: `Volume de negociação 50%+ acima da média, indicando forte interesse institucional no ativo.`,
       });
     }
 
-    if (quote.price >= high52w * 0.95) {
+    if (high52w > 0 && quote.price >= high52w * 0.95) {
       insights.push({
         type: "neutral",
-        text: `Preço próximo da máxima de 52 semanas ($${high52w.toFixed(2)}). Pode haver resistência neste nível.`,
+        text: `Preço próximo da máxima recente (${currencySymbol}${high52w.toFixed(2)}). Pode haver resistência neste nível.`,
       });
-    } else if (quote.price <= low52w * 1.05) {
+    } else if (low52w > 0 && quote.price <= low52w * 1.05) {
       insights.push({
         type: "neutral",
-        text: `Preço próximo da mínima de 52 semanas ($${low52w.toFixed(2)}). Pode representar oportunidade de entrada.`,
+        text: `Preço próximo da mínima recente (${currencySymbol}${low52w.toFixed(2)}). Pode representar oportunidade de entrada.`,
       });
     }
 
+    const apiSource = market === 'BR' ? 'brapi.dev' : 'Financial Modeling Prep';
     insights.push({
       type: "neutral",
-      text: `Análise baseada em dados em tempo real da Alpha Vantage. Última atualização: ${quote.latestTradingDay}.`,
+      text: `Dados em tempo real via ${apiSource}. Mercado: ${market === 'BR' ? 'B3' : 'NASDAQ/NYSE'}.`,
     });
 
     return insights;
@@ -120,7 +126,7 @@ export default function AcaoDetalhes() {
 
   const insights = generateInsights();
   const sentimentScore = quote 
-    ? Math.min(100, Math.max(0, 50 + parseFloat(quote.changePercent.replace('%', '')) * 5))
+    ? Math.min(100, Math.max(0, 50 + quote.changePercent * 5))
     : 50;
 
   if (quoteLoading) {
@@ -156,12 +162,15 @@ export default function AcaoDetalhes() {
               <span className="px-3 py-1 text-sm rounded-lg bg-muted text-muted-foreground">
                 {metadata.sector}
               </span>
+              <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary font-medium">
+                {market === 'BR' ? '🇧🇷 B3' : '🇺🇸 NASDAQ'}
+              </span>
             </div>
-            <p className="text-xl text-muted-foreground">{metadata.name}</p>
+            <p className="text-xl text-muted-foreground">{quote?.name || metadata.name}</p>
           </div>
           <div className="text-right">
             <p className="text-4xl font-bold font-mono text-foreground">
-              $ {quote?.price.toFixed(2) || "—"}
+              {currencySymbol} {quote?.price.toFixed(2) || "—"}
             </p>
             {quote && (
               <p
@@ -175,7 +184,7 @@ export default function AcaoDetalhes() {
                   <TrendingDown className="h-5 w-5" />
                 )}
                 {isPositive ? "+" : ""}
-                {quote.changePercent}
+                {quote.changePercent.toFixed(2)}%
               </p>
             )}
           </div>
@@ -203,7 +212,7 @@ export default function AcaoDetalhes() {
                 <div className="h-[300px] flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
-              ) : (
+              ) : chartData.length > 0 ? (
                 <div className="h-[300px] lg:h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
@@ -231,7 +240,7 @@ export default function AcaoDetalhes() {
                         tickLine={false}
                         axisLine={false}
                         domain={["dataMin - 5", "dataMax + 5"]}
-                        tickFormatter={(value) => `$ ${value}`}
+                        tickFormatter={(value) => `${currencySymbol} ${value}`}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Area
@@ -244,18 +253,22 @@ export default function AcaoDetalhes() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  <p>Histórico não disponível para {market === 'BR' ? 'ações brasileiras' : 'esta ação'}</p>
+                </div>
               )}
             </div>
 
             {/* Fundamentals */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {[
-                { label: "Abertura", value: quote ? `$ ${quote.open.toFixed(2)}` : "—" },
-                { label: "Máxima", value: quote ? `$ ${quote.high.toFixed(2)}` : "—" },
-                { label: "Mínima", value: quote ? `$ ${quote.low.toFixed(2)}` : "—" },
+                { label: "Abertura", value: quote ? `${currencySymbol} ${quote.open.toFixed(2)}` : "—" },
+                { label: "Máxima", value: quote ? `${currencySymbol} ${quote.high.toFixed(2)}` : "—" },
+                { label: "Mínima", value: quote ? `${currencySymbol} ${quote.low.toFixed(2)}` : "—" },
                 { label: "Volume", value: quote ? `${(quote.volume / 1000000).toFixed(1)}M` : "—" },
-                { label: "Máx. 30d", value: high52w ? `$ ${high52w.toFixed(2)}` : "—" },
-                { label: "Mín. 30d", value: low52w ? `$ ${low52w.toFixed(2)}` : "—" },
+                { label: "Máx. 30d", value: high52w ? `${currencySymbol} ${high52w.toFixed(2)}` : "—" },
+                { label: "Mín. 30d", value: low52w ? `${currencySymbol} ${low52w.toFixed(2)}` : "—" },
               ].map((item) => (
                 <div key={item.label} className="kpi-card text-center">
                   <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
