@@ -36,10 +36,10 @@ serve(async (req) => {
       }
     }
 
-    // Financial-focused search query
-    const financialQuery = 'ibovespa OR "bolsa de valores" OR "mercado financeiro" OR selic OR "banco central" OR dólar OR petrobras OR vale OR itaú OR bradesco OR dividendos OR ações OR inflação';
+    // Stock market focused search query
+    const stockQuery = 'ações OR "bolsa de valores" OR ibovespa OR "mercado de ações" OR dividendos OR petrobras OR vale OR itaú OR bradesco OR magalu OR "b3" OR "day trade" OR "swing trade" OR "análise técnica" OR PETR4 OR VALE3 OR ITUB4';
     
-    const url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(financialQuery)}&language=pt&sortBy=publishedAt&pageSize=${pageSize * 2}&apiKey=${NEWS_API_KEY}`;
+    const url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(stockQuery)}&language=pt&sortBy=publishedAt&pageSize=${pageSize * 2}&apiKey=${NEWS_API_KEY}`;
     
     console.log(`Fetching financial news, pageSize: ${pageSize}`);
     
