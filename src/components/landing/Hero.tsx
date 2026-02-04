@@ -8,7 +8,7 @@ export function Hero() {
       {/* Background pattern */}
       <div className="absolute inset-0 bg-gradient-mesh opacity-50" />
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-14">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Text content */}
           <div className="text-center lg:text-left">

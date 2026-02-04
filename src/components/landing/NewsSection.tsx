@@ -75,7 +75,7 @@ export function NewsSection() {
   const otherNews = news?.slice(1) || [];
 
   return (
-    <section className="py-10 bg-muted/30">
+    <section className="py-6 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
