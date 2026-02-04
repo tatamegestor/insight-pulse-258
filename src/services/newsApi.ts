@@ -1,5 +1,4 @@
-const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY || '';
-const BASE_URL = 'https://newsapi.org/v2';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface NewsArticle {
   source: {
@@ -13,12 +12,6 @@ export interface NewsArticle {
   urlToImage: string | null;
   publishedAt: string;
   content: string | null;
-}
-
-export interface NewsResponse {
-  status: string;
-  totalResults: number;
-  articles: NewsArticle[];
 }
 
 // Mock data for fallback when API is unavailable
@@ -76,28 +69,22 @@ const mockNews: NewsArticle[] = [
 ];
 
 export async function getFinanceNews(pageSize: number = 5): Promise<NewsArticle[]> {
-  // If no API key, return mock data
-  if (!NEWS_API_KEY) {
-    console.log('NEWS_API_KEY not found, using mock data');
-    return mockNews.slice(0, pageSize);
-  }
-
   try {
-    const response = await fetch(
-      `${BASE_URL}/everything?q=mercado+financeiro+OR+bolsa+OR+ibovespa&language=pt&sortBy=publishedAt&pageSize=${pageSize}&apiKey=${NEWS_API_KEY}`
-    );
+    const { data, error } = await supabase.functions.invoke('fetch-news', {
+      body: { pageSize }
+    });
 
-    if (!response.ok) {
-      console.warn('News API error, using mock data');
+    if (error) {
+      console.error('Edge function error:', error);
       return mockNews.slice(0, pageSize);
     }
 
-    const data: NewsResponse = await response.json();
-    
-    // Filter out articles without images
-    const articlesWithImages = data.articles.filter(article => article.urlToImage);
-    
-    return articlesWithImages.length > 0 ? articlesWithImages : mockNews.slice(0, pageSize);
+    if (data?.articles && data.articles.length > 0) {
+      return data.articles;
+    }
+
+    console.log('No articles returned, using mock data');
+    return mockNews.slice(0, pageSize);
   } catch (error) {
     console.error('Error fetching news:', error);
     return mockNews.slice(0, pageSize);
