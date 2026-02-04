@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { MarketTicker } from "@/components/landing/MarketTicker";
 import { Hero } from "@/components/landing/Hero";
+import { NewsSection } from "@/components/landing/NewsSection";
 import { MarketOverview } from "@/components/landing/MarketOverview";
 import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
@@ -11,6 +12,7 @@ export default function LandingPage() {
       <Navbar />
       <MarketTicker />
       <Hero />
+      <NewsSection />
       <MarketOverview />
       <CTA />
       <Footer />
