@@ -1,0 +1,304 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Invest IA Design System - Investing.com Style */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Light theme - Investing.com inspired */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    /* Orange primary like investing.com */
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 45 93% 47%;
+    --warning-foreground: 222 47% 11%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 25 95% 53%;
+
+    --radius: 0.5rem;
+
+    /* Custom gradients */
+    --gradient-ai: linear-gradient(135deg, hsl(25 95% 53% / 0.1), hsl(35 95% 50% / 0.1));
+    --gradient-hero: linear-gradient(135deg, hsl(25 95% 53%), hsl(35 95% 50%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(160 70% 40%));
+    --gradient-danger: linear-gradient(135deg, hsl(0 84% 60%), hsl(20 85% 55%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98%));
+
+    /* Glass effects */
+    --glass-bg: hsl(0 0% 100% / 0.9);
+    --glass-border: hsl(220 13% 91% / 0.8);
+    --glass-blur: 16px;
+
+    /* Shadows */
+    --shadow-glow-primary: 0 4px 20px hsl(25 95% 53% / 0.15);
+    --shadow-glow-success: 0 4px 20px hsl(142 76% 36% / 0.15);
+    --shadow-card: 0 2px 12px hsl(222 47% 11% / 0.08);
+
+    /* Sidebar - Dark for contrast */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 18%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 222 47% 18%;
+    --sidebar-ring: 25 95% 53%;
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 14%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 14%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 222 47% 18%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 47% 18%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 45 93% 47%;
+    --warning-foreground: 222 47% 11%;
+
+    --border: 222 47% 22%;
+    --input: 222 47% 22%;
+    --ring: 25 95% 53%;
+
+    /* Glass effects - dark mode */
+    --glass-bg: hsl(222 47% 14% / 0.8);
+    --glass-border: hsl(222 47% 25% / 0.5);
+    
+    /* Shadows - dark mode */
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.3);
+
+    /* Sidebar - Same in dark mode */
+    --sidebar-background: 222 47% 8%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 25 95% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 47% 14%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 222 47% 14%;
+    --sidebar-ring: 25 95% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+}
+
+@layer components {
+  /* Glass card effect */
+  .glass-card {
+    @apply relative overflow-hidden rounded-xl border;
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+
+  .glass-card::before {
+    content: '';
+    @apply absolute inset-0 -z-10;
+    background: var(--gradient-card);
+  }
+
+  /* AI Insight card */
+  .ai-card {
+    @apply glass-card relative;
+    background: var(--gradient-ai);
+    box-shadow: var(--shadow-glow-primary);
+  }
+
+  .ai-card::after {
+    content: '';
+    @apply absolute inset-0 rounded-xl;
+    background: linear-gradient(135deg, transparent 50%, hsl(187 85% 53% / 0.05) 100%);
+    pointer-events: none;
+  }
+
+  /* KPI Cards */
+  .kpi-card {
+    @apply glass-card p-5 transition-all duration-300;
+  }
+
+  .kpi-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-glow-primary);
+    transform: translateY(-2px);
+  }
+
+  /* Positive/Negative indicators */
+  .change-positive {
+    @apply text-success;
+  }
+
+  .change-negative {
+    @apply text-destructive;
+  }
+
+  /* Ticker badge */
+  .ticker-badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-md font-mono font-semibold text-sm;
+    @apply bg-primary/10 text-primary border border-primary/20;
+  }
+
+  /* Data table rows */
+  .table-row-interactive {
+    @apply transition-colors duration-200;
+  }
+
+  .table-row-interactive:hover {
+    @apply bg-muted/50;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-hero);
+  }
+
+  /* Monospace for numbers */
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Pulse animation for live data */
+  .pulse-live {
+    @apply relative;
+  }
+
+  .pulse-live::before {
+    content: '';
+    @apply absolute -left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-success;
+    animation: pulse-glow 2s infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 hsl(160 84% 39% / 0.7);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 0 8px hsl(160 84% 39% / 0);
+    }
+  }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--foreground) / 0.05) 50%,
+      transparent 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Chart container */
+  .chart-container {
+    @apply glass-card p-6;
+  }
+
+  /* Sidebar link active state */
+  .sidebar-link-active {
+    @apply bg-primary/10 text-primary border-l-2 border-primary;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
