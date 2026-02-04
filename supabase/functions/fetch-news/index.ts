@@ -26,21 +26,22 @@ serve(async (req) => {
 
     // Parse request body for parameters
     let pageSize = 5;
-    let query = 'mercado financeiro OR bolsa OR ibovespa';
     
     if (req.method === 'POST') {
       try {
         const body = await req.json();
-        if (body.pageSize) pageSize = Math.min(body.pageSize, 20); // Cap at 20
-        if (body.query) query = body.query;
+        if (body.pageSize) pageSize = Math.min(body.pageSize, 20);
       } catch {
         // Use defaults if body parsing fails
       }
     }
 
-    const url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(query)}&language=pt&sortBy=publishedAt&pageSize=${pageSize}&apiKey=${NEWS_API_KEY}`;
+    // Financial-focused search query
+    const financialQuery = 'ibovespa OR "bolsa de valores" OR "mercado financeiro" OR selic OR "banco central" OR dólar OR petrobras OR vale OR itaú OR bradesco OR dividendos OR ações OR inflação';
     
-    console.log(`Fetching news with pageSize: ${pageSize}`);
+    const url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(financialQuery)}&language=pt&sortBy=publishedAt&pageSize=${pageSize * 2}&apiKey=${NEWS_API_KEY}`;
+    
+    console.log(`Fetching financial news, pageSize: ${pageSize}`);
     
     const response = await fetch(url);
     
@@ -55,9 +56,10 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    // Filter articles without images and sanitize data
+    // Filter articles that have images and limit to requested size
     const articles = (data.articles || [])
       .filter((article: any) => article.urlToImage)
+      .slice(0, pageSize)
       .map((article: any) => ({
         source: {
           id: article.source?.id || null,
@@ -71,6 +73,8 @@ serve(async (req) => {
         publishedAt: article.publishedAt || new Date().toISOString(),
         content: article.content || null,
       }));
+
+    console.log(`Found ${articles.length} financial news articles`);
 
     return new Response(
       JSON.stringify({ articles, totalResults: articles.length }),
