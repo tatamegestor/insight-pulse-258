@@ -163,44 +163,125 @@
 }
 
 @layer components {
-  /* Glass card effect */
+  /* Premium Glass card effect */
   .glass-card {
-    @apply relative overflow-hidden rounded-xl border;
-    background: var(--glass-bg);
-    border-color: var(--glass-border);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    @apply relative overflow-hidden rounded-2xl;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.95) 0%,
+      hsl(var(--card) / 0.85) 50%,
+      hsl(var(--card) / 0.9) 100%
+    );
+    border: 1px solid hsl(var(--border) / 0.5);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    box-shadow: 
+      0 4px 24px -4px hsl(var(--foreground) / 0.08),
+      0 0 0 1px hsl(var(--primary) / 0.03),
+      inset 0 1px 0 hsl(0 0% 100% / 0.05);
   }
 
   .glass-card::before {
     content: '';
-    @apply absolute inset-0 -z-10;
-    background: var(--gradient-card);
+    @apply absolute inset-0 -z-10 rounded-2xl;
+    background: radial-gradient(
+      ellipse at top left,
+      hsl(var(--primary) / 0.04) 0%,
+      transparent 50%
+    );
   }
 
-  /* AI Insight card */
+  .glass-card::after {
+    content: '';
+    @apply absolute inset-0 rounded-2xl pointer-events-none;
+    background: linear-gradient(
+      180deg,
+      hsl(0 0% 100% / 0.02) 0%,
+      transparent 40%
+    );
+    border: 1px solid transparent;
+    border-image: linear-gradient(
+      180deg,
+      hsl(0 0% 100% / 0.08) 0%,
+      hsl(0 0% 100% / 0.02) 100%
+    ) 1;
+  }
+
+  /* AI Insight card - Special premium treatment */
   .ai-card {
-    @apply glass-card relative;
-    background: var(--gradient-ai);
-    box-shadow: var(--shadow-glow-primary);
+    @apply relative overflow-hidden rounded-2xl;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card)) 0%,
+      hsl(var(--primary) / 0.08) 50%,
+      hsl(var(--card)) 100%
+    );
+    border: 1px solid hsl(var(--primary) / 0.2);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    box-shadow: 
+      0 8px 32px -8px hsl(var(--primary) / 0.15),
+      0 0 0 1px hsl(var(--primary) / 0.1),
+      inset 0 1px 0 hsl(var(--primary) / 0.1);
+  }
+
+  .ai-card::before {
+    content: '';
+    @apply absolute inset-0 -z-10;
+    background: radial-gradient(
+      ellipse at top right,
+      hsl(var(--primary) / 0.12) 0%,
+      transparent 60%
+    );
   }
 
   .ai-card::after {
     content: '';
-    @apply absolute inset-0 rounded-xl;
-    background: linear-gradient(135deg, transparent 50%, hsl(187 85% 53% / 0.05) 100%);
-    pointer-events: none;
+    @apply absolute inset-0 rounded-2xl pointer-events-none;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.05) 0%,
+      transparent 50%
+    );
   }
 
-  /* KPI Cards */
+  /* KPI Cards - Premium hover effects */
   .kpi-card {
-    @apply glass-card p-5 transition-all duration-300;
+    @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-500;
+    background: linear-gradient(
+      145deg,
+      hsl(var(--card) / 0.98) 0%,
+      hsl(var(--card) / 0.9) 100%
+    );
+    border: 1px solid hsl(var(--border) / 0.5);
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    box-shadow: 
+      0 2px 16px -4px hsl(var(--foreground) / 0.06),
+      inset 0 1px 0 hsl(0 0% 100% / 0.04);
+  }
+
+  .kpi-card::before {
+    content: '';
+    @apply absolute inset-0 -z-10 rounded-2xl opacity-0 transition-opacity duration-500;
+    background: radial-gradient(
+      circle at center,
+      hsl(var(--primary) / 0.08) 0%,
+      transparent 70%
+    );
   }
 
   .kpi-card:hover {
-    @apply border-primary/30;
-    box-shadow: var(--shadow-glow-primary);
-    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 
+      0 8px 32px -8px hsl(var(--primary) / 0.12),
+      0 0 0 1px hsl(var(--primary) / 0.1),
+      inset 0 1px 0 hsl(var(--primary) / 0.08);
+    transform: translateY(-4px);
+  }
+
+  .kpi-card:hover::before {
+    opacity: 1;
   }
 
   /* Positive/Negative indicators */
@@ -212,10 +293,13 @@
     @apply text-destructive;
   }
 
-  /* Ticker badge */
+  /* Ticker badge - Refined */
   .ticker-badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-md font-mono font-semibold text-sm;
-    @apply bg-primary/10 text-primary border border-primary/20;
+    @apply inline-flex items-center px-2.5 py-1 rounded-lg font-mono font-semibold text-sm;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.08));
+    color: hsl(var(--primary));
+    border: 1px solid hsl(var(--primary) / 0.25);
+    box-shadow: 0 2px 8px -2px hsl(var(--primary) / 0.15);
   }
 
   /* Data table rows */
@@ -294,6 +378,44 @@
   /* Sidebar link active state */
   .sidebar-link-active {
     @apply bg-primary/10 text-primary border-l-2 border-primary;
+  }
+
+  /* Login card special styling */
+  .login-card {
+    @apply relative overflow-hidden rounded-3xl;
+    background: linear-gradient(
+      165deg,
+      hsl(var(--card) / 0.98) 0%,
+      hsl(var(--card) / 0.92) 40%,
+      hsl(var(--card) / 0.95) 100%
+    );
+    border: 1px solid hsl(var(--border) / 0.4);
+    backdrop-filter: blur(24px) saturate(2);
+    -webkit-backdrop-filter: blur(24px) saturate(2);
+    box-shadow: 
+      0 24px 48px -12px hsl(0 0% 0% / 0.25),
+      0 0 0 1px hsl(var(--primary) / 0.05),
+      inset 0 1px 0 hsl(0 0% 100% / 0.08),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.05);
+  }
+
+  .login-card::before {
+    content: '';
+    @apply absolute inset-0 -z-10;
+    background: 
+      radial-gradient(ellipse at top left, hsl(var(--primary) / 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, hsl(var(--success) / 0.05) 0%, transparent 50%);
+  }
+
+  .login-card::after {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(0 0% 100% / 0.15) 50%,
+      transparent 100%
+    );
   }
 }
 

@@ -100,7 +100,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8">
+        <div className="login-card p-8 sm:p-10">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-2">
               {isLogin ? "Bem-vindo de volta" : "Crie sua conta"}
