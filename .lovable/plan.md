@@ -1,206 +1,335 @@
 
-# Plano: Implementar Requisitos Faltantes do Projeto DiverseDev
+# Plano: Edge Function Simples para Receber Insight do n8n
 
 ## Resumo
 
-Completar a implementação do projeto "Stocks Intelligence" conforme os requisitos do documento DiverseDev, focando em: banco de dados, persistência via n8n, ranking de ações, e cálculos financeiros completos.
+Criar uma edge function que **apenas recebe** o insight gerado pelo GPT no n8n e salva no banco de dados. O n8n sera responsavel por chamar o GPT e formatar a resposta.
 
 ---
 
-## 1. Banco de Dados (Supabase)
-
-### Tabelas a criar:
-
-**1.1. stock_quotes (Cotações históricas)**
-```sql
-- id (uuid, PK)
-- symbol (text) - Ex: PETR4, AAPL
-- name (text) - Nome da empresa
-- price (decimal) - Preço atual
-- change_percent (decimal) - Variação percentual
-- volume (bigint) - Volume negociado
-- market (text) - BR ou US
-- currency (text) - BRL ou USD
-- fetched_at (timestamp) - Quando foi coletado
-- created_at (timestamp)
-```
-
-**1.2. system_logs (Logs do sistema)**
-```sql
-- id (uuid, PK)
-- action (text) - Ex: FETCH_QUOTES, N8N_SYNC
-- status (text) - SUCCESS, ERROR
-- details (jsonb) - Detalhes adicionais
-- source (text) - Ex: n8n, edge_function, frontend
-- created_at (timestamp)
-```
-
-**1.3. stock_rankings (Cache de rankings)**
-```sql
-- id (uuid, PK)
-- symbol (text)
-- name (text)
-- daily_change (decimal)
-- weekly_change (decimal)
-- monthly_change (decimal)
-- rank_position (integer)
-- market (text)
-- calculated_at (timestamp)
-```
-
----
-
-## 2. Automação n8n
-
-### 2.1. Workflow de coleta de dados (novo)
-
-O n8n deve ter um workflow agendado que:
-1. Executa a cada 15-30 minutos (horário de mercado)
-2. Busca cotações das APIs (brapi + FMP)
-3. Salva no Supabase via API REST
-4. Registra logs de execução
-5. Calcula rankings diários/semanais/mensais
-
-### 2.2. Edge Function para receber dados do n8n
-
-Criar nova edge function `sync-market-data`:
-- Recebe dados do n8n
-- Valida e insere no banco
-- Calcula variações
-- Atualiza rankings
-- Registra logs
-
----
-
-## 3. Frontend - Novas Funcionalidades
-
-### 3.1. Ranking de Ações (nova página ou componente)
-
-Mostrar:
-- Top 5 maiores altas do dia
-- Top 5 maiores baixas do dia
-- Top 5 do mês
-- Filtros por mercado (BR/US)
-
-### 3.2. Dashboard Aprimorado
-
-Adicionar ao dashboard existente:
-- Card de ranking (top gainers/losers)
-- Variação mensal nos KPIs
-- Gráfico comparativo de performance
-
-### 3.3. Página de Mercado
-
-Melhorias:
-- Ordenação por variação (maior/menor)
-- Coluna de variação mensal
-- Indicador visual de tendência
-
----
-
-## 4. Cálculos Financeiros
-
-### No backend (edge function):
-- Variação diária: `(preço_atual - preço_anterior) / preço_anterior * 100`
-- Variação semanal: comparar com 5 dias úteis atrás
-- Variação mensal: comparar com 22 dias úteis atrás
-- Média móvel simples (7 dias)
-
-### No frontend:
-- Exibir todos os cálculos vindos do banco
-- Formatar com cores (verde/vermelho)
-
----
-
-## 5. Detalhes Tecnicos
-
-### Arquivos a criar:
+## Arquitetura
 
 ```text
-1. supabase/functions/sync-market-data/index.ts
-   - Recebe dados do n8n
-   - Insere cotações no banco
-   - Calcula rankings
-   - Registra logs
-
-2. src/components/dashboard/RankingCard.tsx
-   - Componente de ranking top 5
-   - Altas e baixas do dia
-
-3. src/pages/Rankings.tsx (opcional)
-   - Página dedicada a rankings
-   - Filtros e ordenação
-
-4. src/hooks/useRankings.ts
-   - Hook para buscar rankings do banco
-```
-
-### Arquivos a modificar:
-
-```text
-1. src/pages/Dashboard.tsx
-   - Adicionar RankingCard
-   - Mostrar dados do banco
-
-2. src/pages/Mercado.tsx
-   - Adicionar ordenação por variação
-   - Mostrar variação mensal
-
-3. src/components/dashboard/KPICards.tsx
-   - Adicionar variação mensal
-   - Buscar dados do banco
+[n8n Workflow]
+      |
+      ├── Schedule Trigger (3x ao dia)
+      ├── HTTP Request (buscar dados do mercado)
+      ├── OpenAI Node (GPT gera insight)
+      ├── Code Node (formatar payload)
+      |
+      v
+[Edge Function: save-daily-insight]
+      |
+      ├── Recebe: { content, sentiment, market }
+      ├── Salva em daily_insights
+      ├── Registra log em system_logs
+      |
+      v
+[Frontend Dashboard]
+      |
+      └── useDailyInsight hook busca e exibe
 ```
 
 ---
 
-## 6. Fluxo Completo do Dado (para apresentação)
+## 1. Banco de Dados
 
-```text
-[APIs Externas] --> [n8n Workflow] --> [Edge Function] --> [Supabase DB]
-                                                               |
-                                                               v
-[Frontend React] <-- [React Query] <-- [Supabase Client] <-----+
+### Nova Tabela: `daily_insights`
+
+| Coluna | Tipo | Descricao |
+|--------|------|-----------|
+| id | uuid (PK) | Identificador unico |
+| content | text | Texto do insight gerado pelo GPT |
+| sentiment | text | otimista, neutro, pessimista |
+| market | text | BR, US ou BOTH |
+| generated_at | timestamp | Quando foi gerado |
+| created_at | timestamp | Timestamp de criacao |
+
+**RLS**: Leitura publica (SELECT para todos).
+
+---
+
+## 2. Edge Function: `save-daily-insight`
+
+### Payload esperado do n8n:
+
+```json
+{
+  "content": "O mercado brasileiro apresenta tendencia de alta...",
+  "sentiment": "otimista",
+  "market": "BOTH"
+}
 ```
 
-1. APIs brapi.dev e FMP fornecem cotações
-2. n8n coleta periodicamente (agendado)
-3. Edge function valida e persiste
-4. Banco armazena historico e rankings
-5. Frontend exibe dados e insights
+### Codigo da Edge Function:
+
+```typescript
+// supabase/functions/save-daily-insight/index.ts
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, ...",
+};
+
+interface InsightRequest {
+  content: string;
+  sentiment: "otimista" | "neutro" | "pessimista";
+  market?: "BR" | "US" | "BOTH";
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  try {
+    const { content, sentiment, market = "BOTH" }: InsightRequest = await req.json();
+
+    if (!content || !sentiment) {
+      throw new Error("content and sentiment are required");
+    }
+
+    // 1. Salvar insight no banco
+    const { data, error } = await supabase
+      .from("daily_insights")
+      .insert({
+        content,
+        sentiment,
+        market,
+        generated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // 2. Registrar log de sucesso
+    await supabase.from("system_logs").insert({
+      action: "SAVE_DAILY_INSIGHT",
+      status: "SUCCESS",
+      details: { insight_id: data.id, sentiment, market },
+      source: "n8n",
+    });
+
+    return new Response(
+      JSON.stringify({ success: true, insight: data }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    // Log de erro
+    await supabase.from("system_logs").insert({
+      action: "SAVE_DAILY_INSIGHT",
+      status: "ERROR",
+      details: { error: error.message },
+      source: "n8n",
+    });
+
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
+```
 
 ---
 
-## 7. Evidencias Tecnicas para Entrega
+## 3. Frontend
 
-O que voce tera apos implementacao:
+### Novo Hook: `useDailyInsight`
 
-- Prints do n8n: Workflow de coleta + webhook do chatbot
-- Diagrama do banco: 3 tabelas (quotes, logs, rankings)
-- Prints do Supabase: Tabelas com dados reais
-- Interface Lovable: Dashboard com rankings e graficos
-- Fluxo completo: Dado da API ate a tela
+```typescript
+// src/hooks/useDailyInsight.ts
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
+export interface DailyInsight {
+  id: string;
+  content: string;
+  sentiment: "otimista" | "neutro" | "pessimista";
+  market: string;
+  generated_at: string;
+  created_at: string;
+}
+
+export function useDailyInsight() {
+  return useQuery({
+    queryKey: ["dailyInsight"],
+    queryFn: async (): Promise<DailyInsight | null> => {
+      const { data, error } = await supabase
+        .from("daily_insights")
+        .select("*")
+        .order("generated_at", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error("Error fetching daily insight:", error);
+        return null;
+      }
+
+      return data?.[0] || null;
+    },
+    staleTime: 1000 * 60 * 30, // Cache 30 minutos
+    refetchInterval: 1000 * 60 * 15, // Refetch a cada 15 min
+  });
+}
+```
+
+### Componente Atualizado: `AIInsightCard`
+
+Modificacoes:
+- Importar e usar `useDailyInsight`
+- Substituir texto estatico por dados do banco
+- Mostrar sentimento com cores dinamicas
+- Exibir tempo desde ultima atualizacao (formatRelative)
+- Estado de loading com skeleton
 
 ---
 
-## 8. Ordem de Implementacao Sugerida
+## 4. Configuracao n8n
 
-1. **Primeiro**: Criar tabelas no Supabase (15 min)
-2. **Segundo**: Edge function sync-market-data (30 min)
-3. **Terceiro**: Configurar workflow n8n de coleta (30 min)
-4. **Quarto**: Componente RankingCard no dashboard (20 min)
-5. **Quinto**: Melhorar pagina Mercado com ordenacao (15 min)
-6. **Sexto**: Testar fluxo completo (15 min)
+### Workflow: "Gerar e Salvar Insight Diario"
+
+**Nos do Workflow:**
+
+1. **Schedule Trigger**
+   - Cron: `0 10,14,17 * * 1-5` (10h, 14h, 17h dias uteis)
+
+2. **HTTP Request** (buscar dados do mercado - opcional)
+   - Pode buscar do seu banco ou de APIs externas
+
+3. **OpenAI Node** (GPT)
+   - Model: gpt-4 ou gpt-3.5-turbo
+   - Prompt:
+   ```text
+   Voce e um analista de mercado financeiro.
+   Gere um insight conciso (3 frases) sobre o mercado de acoes hoje.
+   Inclua tendencia geral, destaque 1-2 acoes, e possivel direcao futura.
+   Responda em portugues brasileiro.
+   ```
+
+4. **Code Node** (formatar payload)
+   ```javascript
+   const response = $input.first().json.message.content;
+   
+   // Detectar sentimento baseado em palavras-chave
+   let sentiment = "neutro";
+   if (response.toLowerCase().includes("alta") || 
+       response.toLowerCase().includes("otimista") ||
+       response.toLowerCase().includes("positivo")) {
+     sentiment = "otimista";
+   } else if (response.toLowerCase().includes("baixa") || 
+              response.toLowerCase().includes("pessimista") ||
+              response.toLowerCase().includes("negativo")) {
+     sentiment = "pessimista";
+   }
+   
+   return {
+     json: {
+       content: response,
+       sentiment: sentiment,
+       market: "BOTH"
+     }
+   };
+   ```
+
+5. **HTTP Request** (salvar no banco)
+   - Method: POST
+   - URL: `https://zwlvmzsfcvomjckvvknn.supabase.co/functions/v1/save-daily-insight`
+   - Headers:
+     - `Authorization`: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (anon key)
+     - `Content-Type`: `application/json`
+   - Body: `{{ $json }}` (output do Code Node)
 
 ---
 
-## Resumo das Lacunas Criticas
+## 5. Arquivos a Criar
 
-| Prioridade | Item | Impacto |
-|------------|------|---------|
-| ALTA | Tabelas no banco | Sem isso, nao ha persistencia |
-| ALTA | Workflow n8n de coleta | Requisito obrigatorio |
-| ALTA | Logs no banco | Requisito obrigatorio |
-| MEDIA | Rankings | Funcionalidade do tema |
-| MEDIA | Variacao mensal | Melhora o produto |
-| BAIXA | Dashboard aprimorado | Polish final |
+| Arquivo | Descricao |
+|---------|-----------|
+| `supabase/functions/save-daily-insight/index.ts` | Edge function para salvar insight |
+| `src/hooks/useDailyInsight.ts` | Hook para buscar insight do banco |
 
+## 6. Arquivos a Modificar
+
+| Arquivo | Alteracao |
+|---------|-----------|
+| `src/components/dashboard/AIInsightCard.tsx` | Usar dados reais do hook |
+
+## 7. Migration SQL
+
+```sql
+-- Criar tabela daily_insights
+CREATE TABLE public.daily_insights (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  content text NOT NULL,
+  sentiment text NOT NULL DEFAULT 'neutro',
+  market text NOT NULL DEFAULT 'BOTH',
+  generated_at timestamp with time zone DEFAULT now(),
+  created_at timestamp with time zone DEFAULT now()
+);
+
+-- Habilitar RLS
+ALTER TABLE public.daily_insights ENABLE ROW LEVEL SECURITY;
+
+-- Politica: Todos podem ler
+CREATE POLICY "Todos podem ler insights" 
+  ON public.daily_insights 
+  FOR SELECT 
+  USING (true);
+```
+
+---
+
+## 6. Ordem de Implementacao
+
+| Ordem | Tarefa | Tempo |
+|-------|--------|-------|
+| 1 | Criar tabela `daily_insights` (migration) | 5 min |
+| 2 | Criar edge function `save-daily-insight` | 10 min |
+| 3 | Criar hook `useDailyInsight` | 5 min |
+| 4 | Atualizar `AIInsightCard` com dados reais | 10 min |
+| 5 | Configurar workflow n8n com OpenAI | 15 min |
+| 6 | Testar fluxo completo | 5 min |
+
+**Tempo total estimado**: ~50 minutos
+
+---
+
+## 7. Teste da Edge Function
+
+### Via cURL:
+
+```bash
+curl -X POST \
+  'https://zwlvmzsfcvomjckvvknn.supabase.co/functions/v1/save-daily-insight' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "content": "O mercado brasileiro opera em alta nesta sessao...",
+    "sentiment": "otimista",
+    "market": "BOTH"
+  }'
+```
+
+### Resposta esperada:
+
+```json
+{
+  "success": true,
+  "insight": {
+    "id": "uuid-aqui",
+    "content": "O mercado brasileiro opera em alta...",
+    "sentiment": "otimista",
+    "market": "BOTH",
+    "generated_at": "2026-02-05T14:30:00Z"
+  }
+}
+```
