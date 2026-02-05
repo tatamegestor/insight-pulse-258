@@ -14,7 +14,108 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      stock_quotes: {
+        Row: {
+          change_percent: number
+          created_at: string
+          currency: string
+          fetched_at: string
+          id: string
+          market: string
+          name: string
+          price: number
+          symbol: string
+          volume: number
+        }
+        Insert: {
+          change_percent?: number
+          created_at?: string
+          currency?: string
+          fetched_at?: string
+          id?: string
+          market: string
+          name: string
+          price: number
+          symbol: string
+          volume?: number
+        }
+        Update: {
+          change_percent?: number
+          created_at?: string
+          currency?: string
+          fetched_at?: string
+          id?: string
+          market?: string
+          name?: string
+          price?: number
+          symbol?: string
+          volume?: number
+        }
+        Relationships: []
+      }
+      stock_rankings: {
+        Row: {
+          calculated_at: string
+          daily_change: number
+          id: string
+          market: string
+          monthly_change: number | null
+          name: string
+          rank_position: number
+          symbol: string
+          weekly_change: number | null
+        }
+        Insert: {
+          calculated_at?: string
+          daily_change?: number
+          id?: string
+          market: string
+          monthly_change?: number | null
+          name: string
+          rank_position: number
+          symbol: string
+          weekly_change?: number | null
+        }
+        Update: {
+          calculated_at?: string
+          daily_change?: number
+          id?: string
+          market?: string
+          monthly_change?: number | null
+          name?: string
+          rank_position?: number
+          symbol?: string
+          weekly_change?: number | null
+        }
+        Relationships: []
+      }
+      system_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          source: string
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          source?: string
+          status: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

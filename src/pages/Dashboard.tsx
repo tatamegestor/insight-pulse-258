@@ -2,6 +2,7 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { AIInsightCard } from "@/components/dashboard/AIInsightCard";
 import { KPICards } from "@/components/dashboard/KPICards";
 import { MainChart } from "@/components/dashboard/MainChart";
+import { RankingCard } from "@/components/dashboard/RankingCard";
 
 export default function Dashboard() {
   const currentHour = new Date().getHours();
@@ -31,9 +32,14 @@ export default function Dashboard() {
           <KPICards />
         </div>
 
-        {/* Main Chart */}
-        <div className="animate-fade-in" style={{ animationDelay: "0.3s" }}>
-          <MainChart />
+        {/* Ranking Card + Main Chart */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+          <div className="lg:col-span-1">
+            <RankingCard />
+          </div>
+          <div className="lg:col-span-2">
+            <MainChart />
+          </div>
         </div>
       </div>
     </DashboardLayout>
