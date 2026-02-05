@@ -48,7 +48,7 @@ export function FloatingChatbot() {
       {isOpen && (
         <div
           className={cn(
-            "fixed bottom-24 right-6 z-50 w-[380px] h-[520px]",
+            "fixed bottom-24 right-6 z-50 w-[340px] h-[420px]",
             "flex flex-col",
             "glass-card overflow-hidden",
             "animate-scale-in"
