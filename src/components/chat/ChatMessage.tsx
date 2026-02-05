@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Bot, User } from "lucide-react";
+import { TrendingUp, User } from "lucide-react";
 
 export interface ChatMessageData {
   id: string;
@@ -28,19 +28,19 @@ export function ChatMessage({ message }: ChatMessageProps) {
           className={cn(
             isUser
               ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
+              : "bg-gradient-to-br from-primary/20 to-primary/10 text-primary"
           )}
         >
-          {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+          {isUser ? <User className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
         </AvatarFallback>
       </Avatar>
 
       <div
         className={cn(
-          "max-w-[75%] rounded-lg px-3 py-2 text-sm",
+          "max-w-[75%] rounded-xl px-3 py-2 text-sm",
           isUser
             ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground"
+            : "bg-gradient-to-br from-muted to-muted/80 text-foreground border border-border/50"
         )}
       >
         <p className="whitespace-pre-wrap break-words">{message.content}</p>

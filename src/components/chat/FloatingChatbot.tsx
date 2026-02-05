@@ -1,16 +1,28 @@
 import { useState } from "react";
-import { MessageCircle, X, Trash2 } from "lucide-react";
+import { MessageCircle, X, Trash2, TrendingUp, AlertCircle, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useChatbot } from "@/hooks/useChatbot";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { cn } from "@/lib/utils";
 
+const COMPANY_SUGGESTIONS = [
+  { name: "PETR4", label: "Petrobras" },
+  { name: "VALE3", label: "Vale" },
+  { name: "ITUB4", label: "Itaú" },
+  { name: "AAPL", label: "Apple" },
+  { name: "MSFT", label: "Microsoft" },
+];
+
 export function FloatingChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const { messages, isLoading, sendMessage, clearHistory } = useChatbot();
+
+  const handleSuggestionClick = (company: string) => {
+    sendMessage(company);
+  };
 
   return (
     <>
@@ -34,32 +46,70 @@ export function FloatingChatbot() {
 
       {/* Chat Panel */}
       {isOpen && (
-        <Card
+        <div
           className={cn(
-            "fixed bottom-24 right-6 z-50 w-[380px] h-[500px]",
+            "fixed bottom-24 right-6 z-50 w-[380px] h-[520px]",
             "flex flex-col",
-            "bg-background/95 backdrop-blur-md border-border/50",
-            "shadow-2xl animate-scale-in"
+            "glass-card overflow-hidden",
+            "animate-scale-in"
           )}
         >
-          <CardHeader className="flex flex-row items-center justify-between py-3 px-4 border-b">
-            <CardTitle className="text-base font-semibold">Assistente</CardTitle>
+          {/* Header with gradient */}
+          <div className="flex items-center justify-between py-3 px-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-primary/5">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-primary/15">
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-base font-semibold text-foreground">Analista de Empresas</span>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
+                Beta
+              </Badge>
+            </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={clearHistory}
-              className="h-8 w-8"
+              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
               title="Limpar conversa"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
-          </CardHeader>
+          </div>
 
-          <CardContent className="flex-1 p-0 overflow-hidden">
+          {/* Content */}
+          <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full p-4">
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                  <p>Envie uma mensagem para começar</p>
+                <div className="flex flex-col items-center justify-center h-full text-center gap-4 py-8">
+                  <div className="p-4 rounded-2xl bg-primary/10">
+                    <Building2 className="h-10 w-10 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-foreground font-medium">
+                      Resumidor de Empresas
+                    </p>
+                    <p className="text-sm text-muted-foreground max-w-[280px]">
+                      Digite o nome de uma empresa para ver um resumo sobre ela
+                    </p>
+                  </div>
+                  
+                  {/* Suggestion chips */}
+                  <div className="flex flex-wrap justify-center gap-2 mt-2">
+                    {COMPANY_SUGGESTIONS.map((company) => (
+                      <button
+                        key={company.name}
+                        onClick={() => handleSuggestionClick(company.name)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-full text-xs font-medium",
+                          "bg-secondary hover:bg-secondary/80 text-secondary-foreground",
+                          "border border-border/50 hover:border-primary/30",
+                          "transition-all duration-200 hover:scale-105"
+                        )}
+                      >
+                        {company.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
@@ -69,12 +119,24 @@ export function FloatingChatbot() {
                 </div>
               )}
             </ScrollArea>
-          </CardContent>
+          </div>
 
-          <CardFooter className="p-4 border-t">
-            <ChatInput onSend={sendMessage} isLoading={isLoading} />
-          </CardFooter>
-        </Card>
+          {/* Footer with disclaimer and input */}
+          <div className="border-t border-border/50 bg-background/50">
+            {/* Disclaimer */}
+            <div className="flex items-center gap-1.5 px-4 pt-2 pb-1">
+              <AlertCircle className="h-3 w-3 text-muted-foreground shrink-0" />
+              <p className="text-[10px] text-muted-foreground leading-tight">
+                Informações educacionais. Não constitui recomendação de investimento.
+              </p>
+            </div>
+            
+            {/* Input */}
+            <div className="px-4 pb-4 pt-1">
+              <ChatInput onSend={sendMessage} isLoading={isLoading} />
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
