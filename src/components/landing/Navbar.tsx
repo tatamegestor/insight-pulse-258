@@ -16,7 +16,7 @@ export function Navbar() {
               <TrendingUp className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="text-xl font-bold text-foreground">
-              Invest<span className="text-primary">IA</span>
+              Invest <span className="text-primary">AI</span>
             </span>
           </Link>
 

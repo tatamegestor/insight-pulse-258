@@ -39,7 +39,7 @@ export function Footer() {
                 <TrendingUp className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="text-lg font-bold text-foreground">
-                Invest<span className="text-primary">IA</span>
+                Invest <span className="text-primary">AI</span>
               </span>
             </Link>
             <p className="text-sm text-muted-foreground">
@@ -69,7 +69,7 @@ export function Footer() {
 
         <div className="border-t border-border mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} InvestIA. Todos os direitos reservados.
+            © {new Date().getFullYear()} Invest AI. Todos os direitos reservados.
           </p>
           <div className="flex items-center gap-4">
             <a
