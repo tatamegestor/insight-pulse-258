@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_insights: {
+        Row: {
+          content: string
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          market: string
+          sentiment: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          market?: string
+          sentiment?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          market?: string
+          sentiment?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
