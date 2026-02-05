@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -23,6 +24,22 @@ interface AppSidebarProps {
 
 export function AppSidebar({ onLogout }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, profile, signOut } = useAuth();
+
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  const displayEmail = user?.email || '';
+  const avatarUrl = profile?.avatar_url || '';
+  const initials = displayName
+    .split(' ')
+    .map(n => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const handleLogout = async () => {
+    await signOut();
+    onLogout?.();
+  };
 
   return (
     <aside
@@ -100,18 +117,18 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
           )}
         >
           <Avatar className="h-9 w-9 shrink-0">
-            <AvatarImage src="" />
+            <AvatarImage src={avatarUrl} alt={displayName} />
             <AvatarFallback className="bg-primary/20 text-primary text-sm font-semibold">
-              IN
+              {initials}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                Investidor
+                {displayName}
               </p>
               <p className="text-xs text-muted-foreground truncate">
-                investidor@email.com
+                {displayEmail}
               </p>
             </div>
           )}
@@ -121,7 +138,7 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-4 w-4" />
@@ -139,7 +156,7 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={onLogout}
+                onClick={handleLogout}
                 className="mt-2 w-full h-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-4 w-4" />
