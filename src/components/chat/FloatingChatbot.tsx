@@ -86,10 +86,10 @@ export function FloatingChatbot() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-foreground font-medium">
-                      Resumidor de Empresas
+                      Seu assistente de investimentos
                     </p>
                     <p className="text-sm text-muted-foreground max-w-[280px]">
-                      Digite o nome de uma empresa para ver um resumo sobre ela
+                      Pergunte sobre empresas, ações e mercado financeiro
                     </p>
                   </div>
                   
