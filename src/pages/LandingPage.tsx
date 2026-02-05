@@ -5,6 +5,7 @@ import { NewsSection } from "@/components/landing/NewsSection";
 import { MarketOverview } from "@/components/landing/MarketOverview";
 import { CTA } from "@/components/landing/CTA";
 import { Footer } from "@/components/landing/Footer";
+import { FloatingChatbot } from "@/components/chat/FloatingChatbot";
 
 export default function LandingPage() {
   return (
@@ -16,6 +17,7 @@ export default function LandingPage() {
       <MarketOverview />
       <CTA />
       <Footer />
+      <FloatingChatbot />
     </div>
   );
 }
