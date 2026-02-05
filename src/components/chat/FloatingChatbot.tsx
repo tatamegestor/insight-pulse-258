@@ -60,7 +60,7 @@ export function FloatingChatbot() {
               <div className="p-1.5 rounded-lg bg-primary/15">
                 <TrendingUp className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-base font-semibold text-foreground">Analista de Empresas</span>
+              <span className="text-base font-semibold text-foreground">Invest AI</span>
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
                 Beta
               </Badge>
