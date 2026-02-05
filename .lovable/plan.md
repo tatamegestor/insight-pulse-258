@@ -1,162 +1,192 @@
 
-# Plano: Migrar para Massive API (ex-Polygon.io)
+
+# Plano: Chatbot Flutuante com Integração n8n (Opção B - Secret)
 
 ## Resumo
 
-Substituir Alpha Vantage pela **Massive API** (anteriormente Polygon.io) para dados de acoes americanas. A API oferece dados end-of-day gratuitos com limite muito maior (5 req/min vs 25/dia).
+Implementar um chatbot flutuante que aparece em todas as páginas, comunicando-se com n8n através de uma Edge Function que usa a secret `N8N_WEBHOOK_URL`.
 
 ---
 
-## Por que Massive API
+## Arquitetura
 
-| Caracteristica | Alpha Vantage | Massive (Polygon) |
-|---------------|---------------|-------------------|
-| Limite gratuito | 25 req/dia | 5 req/min (~7.200/dia) |
-| Historico | 20 dias | 2 anos |
-| Dados | 15-20 min delay | End-of-day |
-| Batch requests | Nao | Nao (mas limite alto compensa) |
-
----
-
-## Endpoints Necessarios
-
-### 1. Previous Day Bar (cotacao atual)
 ```text
-GET /v2/aggs/ticker/{symbol}/prev?adjusted=true&apiKey=KEY
+Usuario digita mensagem
+         │
+         ▼
+┌─────────────────────────┐
+│   FloatingChatbot.tsx   │
+│   (Componente React)    │
+└───────────┬─────────────┘
+            │ POST /chat-webhook
+            ▼
+┌─────────────────────────┐
+│  Edge Function          │
+│  chat-webhook/index.ts  │
+│  (usa N8N_WEBHOOK_URL)  │
+└───────────┬─────────────┘
+            │ POST webhook
+            ▼
+┌─────────────────────────┐
+│     n8n Workflow        │
+│  Webhook → AI → Reply   │
+└─────────────────────────┘
 ```
 
-Retorna:
-```json
-{
-  "results": [{
-    "T": "AAPL",      // ticker
-    "o": 115.55,      // open
-    "h": 117.59,      // high
-    "l": 114.13,      // low
-    "c": 115.97,      // close (preco atual)
-    "v": 131704427,   // volume
-    "t": 1605042000000 // timestamp
-  }]
+---
+
+## Arquivos a Criar
+
+### 1. src/components/chat/FloatingChatbot.tsx
+
+Componente principal contendo:
+- Botao flutuante (canto inferior direito)
+- Painel de chat expansivel
+- Header com titulo e botao fechar
+- Area de mensagens com scroll
+- Input de texto e botao enviar
+- Estados: isOpen, isLoading, messages
+
+### 2. src/components/chat/ChatMessage.tsx
+
+Componente de mensagem individual:
+- Estilo diferente para user vs assistant
+- Avatar ou icone
+- Timestamp opcional
+- Animacao de entrada
+
+### 3. src/components/chat/ChatInput.tsx
+
+Input de mensagem:
+- Campo de texto
+- Botao enviar
+- Suporte a Enter para enviar
+- Estado de loading (desabilita durante envio)
+
+### 4. src/hooks/useChatbot.ts
+
+Hook para gerenciar estado:
+- messages: array de mensagens
+- isLoading: boolean
+- sendMessage(content): envia para edge function
+- clearHistory(): limpa conversa
+- sessionId: gerado e persistido no localStorage
+
+### 5. supabase/functions/chat-webhook/index.ts
+
+Edge Function proxy:
+- Recebe POST com { message, sessionId }
+- Le secret N8N_WEBHOOK_URL
+- Chama webhook do n8n
+- Retorna { response } do n8n
+- CORS headers
+- Tratamento de erros
+
+---
+
+## Arquivos a Modificar
+
+### src/App.tsx
+
+Adicionar FloatingChatbot como componente global (fora das rotas, para aparecer em todas as paginas).
+
+---
+
+## Estrutura de Dados
+
+```typescript
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
 }
 ```
 
-### 2. Custom Bars (historico)
-```text
-GET /v2/aggs/ticker/{symbol}/range/1/day/{from}/{to}?adjusted=true&apiKey=KEY
-```
+---
 
-Retorna array de barras OHLCV para os ultimos 30 dias.
+## Estilo do Componente
 
-### 3. Ticker Overview (nome da empresa)
-```text
-GET /v3/reference/tickers/{symbol}?apiKey=KEY
-```
+Botao Flutuante:
+- position: fixed
+- bottom: 24px, right: 24px
+- z-index: 50
+- Tamanho: 56px
+- Cor: primary (laranja)
+- Icone: MessageCircle (lucide-react)
+- Sombra e hover effect
 
-Retorna nome completo da empresa para exibicao.
+Painel de Chat:
+- position: fixed
+- bottom: 96px, right: 24px
+- width: 380px, height: 500px
+- z-index: 50
+- glass-card effect
+- Animacao slide-in
 
 ---
 
-## Mudancas na Edge Function
+## Edge Function: chat-webhook
 
-### Arquivo: `supabase/functions/fetch-us-stocks/index.ts`
+```typescript
+// Estrutura basica
+const corsHeaders = { ... };
 
-#### Alteracoes principais:
-
-1. **Remover Alpha Vantage** - apagar codigo e chave hardcoded
-
-2. **Adicionar Massive API**
-   - Base URL: `https://api.massive.com` (ou `api.polygon.io`)
-   - Usar secret `MASSIVE_API_KEY` (a ser criada)
-
-3. **Nova funcao `fetchFromMassive(symbol)`**
-   - Chamar `/v2/aggs/ticker/{symbol}/prev`
-   - Parsear resposta: `results[0].c` = preco, `results[0].o` = open, etc
-
-4. **Nova funcao `fetchHistoryFromMassive(symbol)`**
-   - Chamar `/v2/aggs/ticker/{symbol}/range/1/day/{from}/{to}`
-   - `from` = 30 dias atras, `to` = hoje
-
-5. **Calcular change e changePercent**
-   - A API retorna OHLCV mas nao retorna variacao diretamente
-   - Calcular: `change = close - open`, `changePercent = (change / open) * 100`
-   - Ou buscar tambem o dia anterior para comparar close com previousClose
-
-6. **Manter fallback** - dados mockados apenas como ultimo recurso
-
-7. **Manter cache de 5 minutos** - otimizar requisicoes
-
----
-
-## Mapeamento de Campos
-
-| Massive | MarketQuote |
-|---------|-------------|
-| T | symbol |
-| (ticker details) | name |
-| c | price |
-| c - (prev close) | change |
-| ((c - prev) / prev) * 100 | changePercent |
-| v | volume |
-| h | high |
-| l | low |
-| o | open |
-| (dia anterior c) | previousClose |
-
----
-
-## Secret a Criar
-
-**MASSIVE_API_KEY**: A chave que o usuario forneceu: `9_BEyNCSjSEhim0qFP4yPsOmrDHIcxgu`
-
----
-
-## Estrategia para Cotacao Completa
-
-Para obter todos os campos (incluindo previousClose e variacao), precisamos:
-
-1. Buscar `/v2/aggs/ticker/{symbol}/prev` - dados do dia anterior
-2. Usar esses dados para mostrar o ultimo preco de fechamento
-
-Como a API gratuita so tem end-of-day:
-- `price` = close do dia anterior
-- `previousClose` = close de 2 dias atras (requer 2a chamada)
-- Alternativa: usar open do dia anterior como referencia para variacao
-
----
-
-## Fluxo Simplificado
-
-```text
-1. Receber simbolos [AAPL, MSFT, GOOGL]
-2. Verificar cache (5 min)
-3. Para cada simbolo:
-   a. GET /v2/aggs/ticker/{symbol}/prev
-   b. Extrair OHLCV do results[0]
-   c. Calcular variacao baseado em open
-   d. Mapear para MarketQuote
-4. Salvar no cache
-5. Retornar quotes[]
-
-Se historico solicitado:
-6. GET /v2/aggs/ticker/{symbol}/range/1/day/{30 dias atras}/{hoje}
-7. Mapear resultados para TimeSeriesData[]
+Deno.serve(async (req) => {
+  // Handle CORS
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  
+  // Ler webhook URL da secret
+  const webhookUrl = Deno.env.get('N8N_WEBHOOK_URL');
+  if (!webhookUrl) return erro 500;
+  
+  // Parsear body
+  const { message, sessionId } = await req.json();
+  
+  // Chamar n8n
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, sessionId, timestamp: new Date().toISOString() })
+  });
+  
+  // Retornar resposta
+  const data = await response.json();
+  return new Response(JSON.stringify({ response: data.response || data.output }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+});
 ```
 
 ---
 
-## Ordem de Execucao
+## Secret Necessaria
 
-1. Adicionar secret `MASSIVE_API_KEY` com a chave fornecida
-2. Reescrever `fetch-us-stocks/index.ts` para usar Massive API
-3. Fazer deploy da edge function
-4. Testar na pagina `/mercado`
-5. Verificar dados reais aparecendo
+**N8N_WEBHOOK_URL**: URL do webhook n8n (ex: https://seu-n8n.app/webhook/abc123)
+
+O usuario precisara:
+1. Criar workflow no n8n com Webhook trigger
+2. Copiar URL do webhook
+3. Adicionar como secret no projeto
+
+---
+
+## Ordem de Implementacao
+
+1. Criar componentes de UI (FloatingChatbot, ChatMessage, ChatInput)
+2. Criar hook useChatbot
+3. Criar Edge Function chat-webhook
+4. Solicitar secret N8N_WEBHOOK_URL ao usuario
+5. Integrar FloatingChatbot no App.tsx
+6. Deploy e testar
 
 ---
 
 ## Resultado Esperado
 
-- Acoes US (AAPL, MSFT, GOOGL, etc) com precos reais end-of-day
-- Historico de 30 dias disponivel para graficos
-- Cache de 5 minutos para otimizar requisicoes
-- Sem erros de rate limit (7.200 req/dia vs 25)
+- Botao de chat flutuante visivel em todas as paginas
+- Ao clicar, abre painel de conversacao
+- Usuario digita mensagem, envia para n8n via Edge Function
+- Resposta do n8n aparece no chat
+- Historico mantido durante a sessao
+
