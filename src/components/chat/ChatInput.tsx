@@ -33,9 +33,9 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Digite sua mensagem..."
+        placeholder="Digite o nome da empresa..."
         disabled={isLoading || disabled}
-        className="flex-1 bg-background/50"
+        className="flex-1 bg-background/50 focus-visible:ring-primary"
       />
       <Button
         size="icon"
