@@ -1,192 +1,143 @@
 
-
-# Plano: Chatbot Flutuante com Integração n8n (Opção B - Secret)
+# Plano: Melhorar Visual do Chatbot + Disclaimer Legal
 
 ## Resumo
 
-Implementar um chatbot flutuante que aparece em todas as páginas, comunicando-se com n8n através de uma Edge Function que usa a secret `N8N_WEBHOOK_URL`.
+Aprimorar a aparência do chatbot com estilo glass-card premium, adicionar mensagem de boas-vindas explicando o propósito (resumidor de empresas) e incluir disclaimer legal para proteção jurídica.
 
 ---
 
-## Arquitetura
+## Mudancas Visuais
 
-```text
-Usuario digita mensagem
-         │
-         ▼
-┌─────────────────────────┐
-│   FloatingChatbot.tsx   │
-│   (Componente React)    │
-└───────────┬─────────────┘
-            │ POST /chat-webhook
-            ▼
-┌─────────────────────────┐
-│  Edge Function          │
-│  chat-webhook/index.ts  │
-│  (usa N8N_WEBHOOK_URL)  │
-└───────────┬─────────────┘
-            │ POST webhook
-            ▼
-┌─────────────────────────┐
-│     n8n Workflow        │
-│  Webhook → AI → Reply   │
-└─────────────────────────┘
+### FloatingChatbot.tsx
+
+**Header melhorado:**
+- Icone de grafico/empresa ao lado do titulo
+- Titulo mais descritivo: "Analista de Empresas"
+- Gradiente sutil no header
+- Badge "Beta" opcional
+
+**Painel de chat:**
+- Usar classe `glass-card` existente no projeto
+- Bordas mais arredondadas (rounded-2xl)
+- Animacao de entrada mais suave
+- Sombra com tom laranja sutil
+
+**Mensagem de boas-vindas (estado vazio):**
+- Icone grande de empresa/grafico
+- Texto explicativo: "Digite o nome de uma empresa para ver um resumo sobre ela"
+- Sugestoes de empresas como chips clicaveis (PETR4, VALE3, AAPL)
+
+### ChatMessage.tsx
+
+**Mensagens do assistente:**
+- Fundo com gradiente sutil
+- Borda fina colorida
+- Avatar com icone de grafico ao inves de bot generico
+
+**Mensagens do usuario:**
+- Manter estilo atual (primary color)
+
+### ChatInput.tsx
+
+**Input aprimorado:**
+- Placeholder contextual: "Digite o nome da empresa..."
+- Borda com foco laranja
+- Icone de busca opcional
+
+---
+
+## Disclaimer Legal
+
+**Onde adicionar:**
+1. Footer do painel de chat (sempre visivel)
+2. Mensagem inicial do assistente (primeira resposta)
+
+**Texto do disclaimer:**
+```
+Este servico fornece apenas informacoes educacionais. 
+Nao constitui recomendacao de investimento.
 ```
 
----
-
-## Arquivos a Criar
-
-### 1. src/components/chat/FloatingChatbot.tsx
-
-Componente principal contendo:
-- Botao flutuante (canto inferior direito)
-- Painel de chat expansivel
-- Header com titulo e botao fechar
-- Area de mensagens com scroll
-- Input de texto e botao enviar
-- Estados: isOpen, isLoading, messages
-
-### 2. src/components/chat/ChatMessage.tsx
-
-Componente de mensagem individual:
-- Estilo diferente para user vs assistant
-- Avatar ou icone
-- Timestamp opcional
-- Animacao de entrada
-
-### 3. src/components/chat/ChatInput.tsx
-
-Input de mensagem:
-- Campo de texto
-- Botao enviar
-- Suporte a Enter para enviar
-- Estado de loading (desabilita durante envio)
-
-### 4. src/hooks/useChatbot.ts
-
-Hook para gerenciar estado:
-- messages: array de mensagens
-- isLoading: boolean
-- sendMessage(content): envia para edge function
-- clearHistory(): limpa conversa
-- sessionId: gerado e persistido no localStorage
-
-### 5. supabase/functions/chat-webhook/index.ts
-
-Edge Function proxy:
-- Recebe POST com { message, sessionId }
-- Le secret N8N_WEBHOOK_URL
-- Chama webhook do n8n
-- Retorna { response } do n8n
-- CORS headers
-- Tratamento de erros
+**Estilo:**
+- Texto pequeno (text-xs)
+- Cor muted
+- Icone de informacao (AlertCircle)
 
 ---
 
 ## Arquivos a Modificar
 
-### src/App.tsx
+### 1. src/components/chat/FloatingChatbot.tsx
 
-Adicionar FloatingChatbot como componente global (fora das rotas, para aparecer em todas as paginas).
+Mudancas:
+- Aplicar classe `glass-card` no Card
+- Redesenhar header com icone TrendingUp
+- Nova mensagem de boas-vindas com sugestoes
+- Adicionar disclaimer no footer
+
+### 2. src/components/chat/ChatMessage.tsx
+
+Mudancas:
+- Icone TrendingUp para avatar do assistente
+- Gradiente sutil nas mensagens do assistente
+- Texto do assistente com cor mais legivel (text-foreground)
+
+### 3. src/components/chat/ChatInput.tsx
+
+Mudancas:
+- Placeholder: "Digite o nome da empresa..."
+- Estilo do input com borda focada em primary
 
 ---
 
-## Estrutura de Dados
+## Componente de Sugestoes
 
-```typescript
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+Novo elemento dentro do estado vazio:
+- Chips com nomes de empresas populares
+- Ao clicar, envia automaticamente a mensagem
+- Exemplos: PETR4, VALE3, ITUB4, AAPL, MSFT
+
+---
+
+## Estrutura Visual Final
+
+```text
++----------------------------------+
+|  [icon] Analista de Empresas  [x]|  <- Header com gradiente
++----------------------------------+
+|                                  |
+|     [icone grande]               |
+|   Digite o nome de uma empresa   |  <- Estado vazio
+|   para ver um resumo             |
+|                                  |
+|   [PETR4] [VALE3] [AAPL]         |  <- Sugestoes clicaveis
+|                                  |
++----------------------------------+
+|  [i] Nao constitui recomendacao  |  <- Disclaimer
+|  Digite o nome da empresa...  [>]|  <- Input
++----------------------------------+
 ```
 
 ---
 
-## Estilo do Componente
+## Detalhes Tecnicos
 
-Botao Flutuante:
-- position: fixed
-- bottom: 24px, right: 24px
-- z-index: 50
-- Tamanho: 56px
-- Cor: primary (laranja)
-- Icone: MessageCircle (lucide-react)
-- Sombra e hover effect
+**Classes CSS a utilizar:**
+- `glass-card` (ja existe no index.css)
+- `ai-card` (para efeito premium com gradiente laranja)
+- Animacoes existentes: `animate-fade-in`, `animate-scale-in`
 
-Painel de Chat:
-- position: fixed
-- bottom: 96px, right: 24px
-- width: 380px, height: 500px
-- z-index: 50
-- glass-card effect
-- Animacao slide-in
-
----
-
-## Edge Function: chat-webhook
-
-```typescript
-// Estrutura basica
-const corsHeaders = { ... };
-
-Deno.serve(async (req) => {
-  // Handle CORS
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
-  
-  // Ler webhook URL da secret
-  const webhookUrl = Deno.env.get('N8N_WEBHOOK_URL');
-  if (!webhookUrl) return erro 500;
-  
-  // Parsear body
-  const { message, sessionId } = await req.json();
-  
-  // Chamar n8n
-  const response = await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, sessionId, timestamp: new Date().toISOString() })
-  });
-  
-  // Retornar resposta
-  const data = await response.json();
-  return new Response(JSON.stringify({ response: data.response || data.output }), {
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
-});
-```
-
----
-
-## Secret Necessaria
-
-**N8N_WEBHOOK_URL**: URL do webhook n8n (ex: https://seu-n8n.app/webhook/abc123)
-
-O usuario precisara:
-1. Criar workflow no n8n com Webhook trigger
-2. Copiar URL do webhook
-3. Adicionar como secret no projeto
-
----
-
-## Ordem de Implementacao
-
-1. Criar componentes de UI (FloatingChatbot, ChatMessage, ChatInput)
-2. Criar hook useChatbot
-3. Criar Edge Function chat-webhook
-4. Solicitar secret N8N_WEBHOOK_URL ao usuario
-5. Integrar FloatingChatbot no App.tsx
-6. Deploy e testar
+**Icones necessarios (lucide-react):**
+- TrendingUp ou BarChart3 (para tema financeiro)
+- Building2 (empresas)
+- AlertCircle ou Info (disclaimer)
 
 ---
 
 ## Resultado Esperado
 
-- Botao de chat flutuante visivel em todas as paginas
-- Ao clicar, abre painel de conversacao
-- Usuario digita mensagem, envia para n8n via Edge Function
-- Resposta do n8n aparece no chat
-- Historico mantido durante a sessao
-
+- Visual premium alinhado com o design system do app
+- Proposito claro do chatbot (resumidor de empresas)
+- Protecao juridica com disclaimer visivel
+- Experiencia mais intuitiva com sugestoes de empresas
