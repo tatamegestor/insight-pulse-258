@@ -7,6 +7,7 @@ export interface MarketQuote {
   price: number;
   change: number;
   changePercent: number;
+  changeMonthly?: number;
   volume: number;
   high: number;
   low: number;
@@ -112,6 +113,7 @@ function n8nToMarketQuote(q: N8nStockQuote): MarketQuote {
     price: q.preco,
     change: q.variacao_diaria,
     changePercent: q.preco > 0 ? (q.variacao_diaria / q.preco) * 100 : 0,
+    changeMonthly: q.variacao_mensal,
     volume: 0,
     high: q.preco,
     low: q.preco,
