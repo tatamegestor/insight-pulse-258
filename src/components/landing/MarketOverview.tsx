@@ -7,7 +7,7 @@ import { useMarketOverview } from "@/hooks/useMarketData";
 import { MarketQuote } from "@/services/marketData";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function MarketTable({ data, isLoading }: { data: MarketQuote[]; isLoading?: boolean }) {
+function MarketTable({ data, isLoading, showMonthly = false }: { data: MarketQuote[]; isLoading?: boolean; showMonthly?: boolean }) {
   if (isLoading) {
     return (
       <div className="p-4 space-y-3">
@@ -48,6 +48,11 @@ function MarketTable({ data, isLoading }: { data: MarketQuote[]; isLoading?: boo
             <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
               Var. % (1D)
             </th>
+            {showMonthly && (
+              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
+                Var. % (Mensal)
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -63,7 +68,7 @@ function MarketTable({ data, isLoading }: { data: MarketQuote[]; isLoading?: boo
                 </div>
               </td>
               <td className="text-right py-4 px-4 font-mono font-medium text-foreground">
-                {item.currency === 'BRL' ? 'R$ ' : '$ '}
+                {item.currency === 'BRL' ? 'R$ ' : 'US$ '}
                 {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
               <td
@@ -91,6 +96,25 @@ function MarketTable({ data, isLoading }: { data: MarketQuote[]; isLoading?: boo
                   {item.changePercent.toFixed(2)}%
                 </span>
               </td>
+              {showMonthly && (
+                <td className="text-right py-4 px-4">
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium ${
+                      (item.changeMonthly ?? 0) >= 0
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    }`}
+                  >
+                    {(item.changeMonthly ?? 0) >= 0 ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
+                    {(item.changeMonthly ?? 0) >= 0 ? "+" : ""}
+                    {(item.changeMonthly ?? 0).toFixed(2)}%
+                  </span>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -143,7 +167,7 @@ export function MarketOverview() {
               <MarketTable data={brStocks.data} isLoading={brStocks.isLoading} />
             </TabsContent>
             <TabsContent value="acoes-us" className="m-0">
-              <MarketTable data={usStocks.data} isLoading={usStocks.isLoading} />
+              <MarketTable data={usStocks.data} isLoading={usStocks.isLoading} showMonthly />
             </TabsContent>
           </Tabs>
         </div>
