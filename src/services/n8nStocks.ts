@@ -42,8 +42,19 @@ export async function fetchGlobalStocks(): Promise<N8nStockQuote[]> {
 
     const data = await response.json();
 
-    // O webhook pode retornar um array diretamente ou dentro de um objeto
-    const quotes: N8nStockQuote[] = Array.isArray(data) ? data : (data?.quotes || data?.data || []);
+    // O webhook pode retornar um único objeto ou um array
+    const rawItems = Array.isArray(data) ? data : [data];
+
+    // Normalizar campos que podem vir como string formatada
+    const quotes: N8nStockQuote[] = rawItems
+      .filter((item: any) => item?.ticker)
+      .map((item: any) => ({
+        ticker: item.ticker,
+        nome: item.nome || item.ticker,
+        preco: parsePrice(item.preco),
+        variacao_diaria: parsePercent(item.variacao_diaria),
+        variacao_mensal: parsePercent(item.variacao_mensal),
+      }));
 
     setCache(quotes);
     return quotes;
@@ -51,6 +62,29 @@ export async function fetchGlobalStocks(): Promise<N8nStockQuote[]> {
     console.error('Failed to fetch from n8n webhook:', error);
     return [];
   }
+}
+
+/** Remove prefixos monetários e converte para número */
+function parsePrice(value: any): number {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    // Remove "US$ ", "R$ ", espaços e troca vírgula por ponto
+    const cleaned = value.replace(/[A-Za-z$\s]/g, '').replace(',', '.');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
+}
+
+/** Remove "%" e converte para número */
+function parsePercent(value: any): number {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const cleaned = value.replace('%', '').replace(',', '.').trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+  return 0;
 }
 
 /**
