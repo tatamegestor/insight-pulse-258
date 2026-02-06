@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const { error } = await supabase
       .from('profiles')
-      .update(data)
+      .update(data as any)
       .eq('user_id', user.id);
     
     if (!error) {
