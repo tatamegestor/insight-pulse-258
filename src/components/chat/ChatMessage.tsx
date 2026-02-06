@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TrendingUp, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export interface ChatMessageData {
   id: string;
@@ -43,7 +44,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
             : "bg-gradient-to-br from-muted to-muted/80 text-foreground border border-border/50"
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:m-0 [&>ul]:my-1 [&>ol]:my-1 [&>pre]:my-1">
+          <ReactMarkdown>{message.content}</ReactMarkdown>
+        </div>
       </div>
     </div>
   );
