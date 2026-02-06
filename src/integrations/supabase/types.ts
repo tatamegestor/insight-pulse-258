@@ -41,6 +41,48 @@ export type Database = {
         }
         Relationships: []
       }
+      extraction_logs: {
+        Row: {
+          average_variation: number | null
+          created_at: string | null
+          error_message: string | null
+          execution_id: string | null
+          execution_time: string
+          first_symbol: string | null
+          id: string
+          last_symbol: string | null
+          status: string
+          total_stocks_processed: number | null
+          workflow_name: string
+        }
+        Insert: {
+          average_variation?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          execution_id?: string | null
+          execution_time: string
+          first_symbol?: string | null
+          id?: string
+          last_symbol?: string | null
+          status: string
+          total_stocks_processed?: number | null
+          workflow_name: string
+        }
+        Update: {
+          average_variation?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          execution_id?: string | null
+          execution_time?: string
+          first_symbol?: string | null
+          id?: string
+          last_symbol?: string | null
+          status?: string
+          total_stocks_processed?: number | null
+          workflow_name?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -68,6 +110,66 @@ export type Database = {
           is_active_plan?: boolean
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      stock_prices: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          current_price: number
+          high_price: number | null
+          id: string
+          low_price: number | null
+          market_time: string
+          name: string | null
+          open_price: number | null
+          previous_close: number | null
+          processed_at: string | null
+          symbol: string
+          trend: string | null
+          variation_daily: number | null
+          variation_from_close: number | null
+          volatility_intraday: number | null
+          volume: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          current_price: number
+          high_price?: number | null
+          id?: string
+          low_price?: number | null
+          market_time: string
+          name?: string | null
+          open_price?: number | null
+          previous_close?: number | null
+          processed_at?: string | null
+          symbol: string
+          trend?: string | null
+          variation_daily?: number | null
+          variation_from_close?: number | null
+          volatility_intraday?: number | null
+          volume?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          current_price?: number
+          high_price?: number | null
+          id?: string
+          low_price?: number | null
+          market_time?: string
+          name?: string | null
+          open_price?: number | null
+          previous_close?: number | null
+          processed_at?: string | null
+          symbol?: string
+          trend?: string | null
+          variation_daily?: number | null
+          variation_from_close?: number | null
+          volatility_intraday?: number | null
+          volume?: number | null
         }
         Relationships: []
       }
