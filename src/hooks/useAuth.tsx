@@ -7,6 +7,7 @@ interface Profile {
   user_id: string;
   full_name: string | null;
   avatar_url: string | null;
+  phone_number: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -20,7 +21,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  updateProfile: (data: Partial<Pick<Profile, 'full_name' | 'avatar_url'>>) => Promise<{ error: Error | null }>;
+  updateProfile: (data: Partial<Pick<Profile, 'full_name' | 'avatar_url' | 'phone_number'>>) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -110,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
-  const updateProfile = async (data: Partial<Pick<Profile, 'full_name' | 'avatar_url'>>) => {
+  const updateProfile = async (data: Partial<Pick<Profile, 'full_name' | 'avatar_url' | 'phone_number'>>) => {
     if (!user) return { error: new Error('Usuário não autenticado') };
     
     const { error } = await supabase

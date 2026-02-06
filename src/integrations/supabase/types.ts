@@ -83,6 +83,45 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          created_at: string
+          direction: string
+          id: string
+          is_active: boolean
+          name: string
+          symbol: string
+          target_price: number
+          triggered_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          symbol: string
+          target_price: number
+          triggered_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          symbol?: string
+          target_price?: number
+          triggered_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -90,6 +129,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_active_plan: boolean
+          phone_number: string | null
           updated_at: string
           user_id: string
         }
@@ -99,6 +139,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active_plan?: boolean
+          phone_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -108,6 +149,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_active_plan?: boolean
+          phone_number?: string | null
           updated_at?: string
           user_id?: string
         }
