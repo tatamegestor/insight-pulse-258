@@ -34,6 +34,7 @@ function RankingItem({ symbol, name, change, position, isGainer = true }: Rankin
           <TrendingDown className="h-3 w-3" />
         )}
         {change >= 0 ? "+" : ""}{change.toFixed(2)}%
+        <span className="text-[10px] text-muted-foreground ml-1">(1D)</span>
       </div>
     </div>
   );

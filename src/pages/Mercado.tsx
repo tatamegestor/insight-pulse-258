@@ -171,7 +171,7 @@ export default function Mercado() {
                 <TableHead className="text-muted-foreground">Ação</TableHead>
                 <TableHead className="text-muted-foreground">Nome</TableHead>
                 <TableHead className="text-muted-foreground text-right">Preço</TableHead>
-                <TableHead className="text-muted-foreground text-right">Variação</TableHead>
+                <TableHead className="text-muted-foreground text-right">Variação (1D)</TableHead>
                 <TableHead className="text-muted-foreground">Setor</TableHead>
                 <TableHead className="text-muted-foreground text-right">Ação</TableHead>
               </TableRow>

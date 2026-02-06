@@ -43,10 +43,10 @@ function MarketTable({ data, isLoading }: { data: MarketQuote[]; isLoading?: boo
               Último
             </th>
             <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
-              Variação
+              Variação (1D)
             </th>
             <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
-              Var. %
+              Var. % (1D)
             </th>
           </tr>
         </thead>
