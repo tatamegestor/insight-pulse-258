@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchGlobalStocks, N8nStockQuote } from "@/services/n8nStocks";
 
 export interface MarketQuote {
   symbol: string;
@@ -102,7 +103,28 @@ export async function getBrazilianStocks(symbols: string[]): Promise<MarketQuote
 }
 
 /**
- * Busca cotações de ações americanas via FMP
+ * Converte uma cotação do n8n para o formato MarketQuote
+ */
+function n8nToMarketQuote(q: N8nStockQuote): MarketQuote {
+  return {
+    symbol: q.ticker,
+    name: q.nome,
+    price: q.preco,
+    change: q.variacao_diaria,
+    changePercent: q.preco > 0 ? (q.variacao_diaria / q.preco) * 100 : 0,
+    volume: 0,
+    high: q.preco,
+    low: q.preco,
+    open: q.preco - q.variacao_diaria,
+    previousClose: q.preco - q.variacao_diaria,
+    market: 'US',
+    currency: 'USD',
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Busca cotações de ações americanas via webhook n8n
  */
 export async function getUSStocks(symbols: string[]): Promise<MarketQuote[]> {
   const cacheKey = `us:${symbols.sort().join(',')}`;
@@ -113,20 +135,17 @@ export async function getUSStocks(symbols: string[]): Promise<MarketQuote[]> {
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke('fetch-us-stocks', {
-      body: { symbols }
-    });
+    const allStocks = await fetchGlobalStocks();
+    const symbolSet = new Set(symbols.map(s => s.toUpperCase()));
+    const filtered = allStocks.filter(q => symbolSet.has(q.ticker.toUpperCase()));
+    const quotes = filtered.map(n8nToMarketQuote);
 
-    if (error) {
-      console.error('Error fetching US stocks:', error);
-      throw error;
+    if (quotes.length > 0) {
+      setCachedQuotes(cacheKey, quotes);
     }
-
-    const quotes = data?.quotes || [];
-    setCachedQuotes(cacheKey, quotes);
     return quotes;
   } catch (error) {
-    console.error('Failed to fetch US stocks:', error);
+    console.error('Failed to fetch US stocks from n8n:', error);
     return [];
   }
 }

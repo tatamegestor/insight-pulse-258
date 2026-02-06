@@ -157,60 +157,108 @@ export type Database = {
       }
       stock_prices: {
         Row: {
+          auto_insight: string | null
+          brapi_change: number | null
+          brapi_change_percent: number | null
           created_at: string | null
           currency: string | null
           current_price: number
+          distance_from_52week_high: number | null
+          distance_from_52week_low: number | null
+          earnings_per_share: number | null
+          fifty_two_week_high: number | null
+          fifty_two_week_low: number | null
           high_price: number | null
           id: string
+          logo_url: string | null
+          long_name: string | null
           low_price: number | null
+          market_cap: number | null
           market_time: string
-          name: string | null
           open_price: number | null
+          position_52week_range: number | null
           previous_close: number | null
+          price_earnings: number | null
           processed_at: string | null
+          range_position: string | null
+          short_name: string | null
           symbol: string
           trend: string | null
+          trend_emoji: string | null
           variation_daily: number | null
           variation_from_close: number | null
           volatility_intraday: number | null
+          volatility_level: string | null
           volume: number | null
         }
         Insert: {
+          auto_insight?: string | null
+          brapi_change?: number | null
+          brapi_change_percent?: number | null
           created_at?: string | null
           currency?: string | null
           current_price: number
+          distance_from_52week_high?: number | null
+          distance_from_52week_low?: number | null
+          earnings_per_share?: number | null
+          fifty_two_week_high?: number | null
+          fifty_two_week_low?: number | null
           high_price?: number | null
           id?: string
+          logo_url?: string | null
+          long_name?: string | null
           low_price?: number | null
+          market_cap?: number | null
           market_time: string
-          name?: string | null
           open_price?: number | null
+          position_52week_range?: number | null
           previous_close?: number | null
+          price_earnings?: number | null
           processed_at?: string | null
+          range_position?: string | null
+          short_name?: string | null
           symbol: string
           trend?: string | null
+          trend_emoji?: string | null
           variation_daily?: number | null
           variation_from_close?: number | null
           volatility_intraday?: number | null
+          volatility_level?: string | null
           volume?: number | null
         }
         Update: {
+          auto_insight?: string | null
+          brapi_change?: number | null
+          brapi_change_percent?: number | null
           created_at?: string | null
           currency?: string | null
           current_price?: number
+          distance_from_52week_high?: number | null
+          distance_from_52week_low?: number | null
+          earnings_per_share?: number | null
+          fifty_two_week_high?: number | null
+          fifty_two_week_low?: number | null
           high_price?: number | null
           id?: string
+          logo_url?: string | null
+          long_name?: string | null
           low_price?: number | null
+          market_cap?: number | null
           market_time?: string
-          name?: string | null
           open_price?: number | null
+          position_52week_range?: number | null
           previous_close?: number | null
+          price_earnings?: number | null
           processed_at?: string | null
+          range_position?: string | null
+          short_name?: string | null
           symbol?: string
           trend?: string | null
+          trend_emoji?: string | null
           variation_daily?: number | null
           variation_from_close?: number | null
           volatility_intraday?: number | null
+          volatility_level?: string | null
           volume?: number | null
         }
         Relationships: []
