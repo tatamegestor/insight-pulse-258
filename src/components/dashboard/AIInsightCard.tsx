@@ -1,4 +1,5 @@
 import { Bot, Sparkles, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { useDailyInsight } from "@/hooks/useDailyInsight";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
@@ -107,9 +108,9 @@ export function AIInsightCard() {
               IA
             </span>
           </div>
-          <p className="text-foreground/90 leading-relaxed">
-            {insight.content}
-          </p>
+          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90 leading-relaxed [&>p]:m-0 [&>ul]:my-1 [&>ol]:my-1">
+            <ReactMarkdown>{insight.content}</ReactMarkdown>
+          </div>
           <div className="flex items-center gap-4 mt-4">
             <div className={`flex items-center gap-2 text-sm ${sentimentConfig.colorClass}`}>
               <SentimentIcon className="h-4 w-4" />
