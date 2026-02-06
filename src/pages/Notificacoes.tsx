@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Bell, Plus, Trash2, TrendingUp, TrendingDown, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,15 +10,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePriceAlerts, PriceAlertInput } from "@/hooks/usePriceAlerts";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "@/hooks/use-toast";
 
 export default function Notificacoes() {
   const { alerts, isLoading, createAlert, toggleAlert, deleteAlert } = usePriceAlerts();
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
-  const [phone, setPhone] = useState((profile as any)?.phone_number || "");
+  const [phone, setPhone] = useState(profile?.phone_number || "");
+
+  // Sync phone state when profile loads
+  useEffect(() => {
+    if (profile?.phone_number) {
+      setPhone(profile.phone_number);
+    }
+  }, [profile?.phone_number]);
 
   // Form state
   const [symbol, setSymbol] = useState("");
@@ -30,7 +37,7 @@ export default function Notificacoes() {
     if (!symbol || !name || !targetPrice) return;
     
     // Check if phone is set
-    if (!(profile as any)?.phone_number) {
+    if (!profile?.phone_number) {
       toast({ title: "Configure seu WhatsApp", description: "Cadastre seu número de telefone antes de criar alertas.", variant: "destructive" });
       setPhoneDialogOpen(true);
       return;
@@ -50,7 +57,7 @@ export default function Notificacoes() {
 
   const handleSavePhone = async () => {
     if (!user || !phone) return;
-    const { error } = await supabase.from("profiles").update({ phone_number: phone } as any).eq("user_id", user.id);
+    const { error } = await updateProfile({ phone_number: phone } as any);
     if (error) {
       toast({ title: "Erro", description: "Não foi possível salvar o telefone.", variant: "destructive" });
     } else {
@@ -84,7 +91,7 @@ export default function Notificacoes() {
         </div>
 
         {/* Phone reminder */}
-        {!(profile as any)?.phone_number && (
+        {!profile?.phone_number && (
           <div className="glass-card p-4 border-primary/30 animate-fade-in flex items-center gap-3">
             <Phone className="h-5 w-5 text-primary" />
             <div className="flex-1">
