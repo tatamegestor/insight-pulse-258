@@ -1,4 +1,4 @@
-const N8N_WEBHOOK_URL = 'https://projeto-final.app.n8n.cloud/webhook/buscar-acoes-globais';
+import { supabase } from "@/integrations/supabase/client";
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
 
@@ -25,64 +25,10 @@ function setCache(quotes: N8nStockQuote[]): void {
   cachedData = { quotes, timestamp: Date.now() };
 }
 
-/**
- * Busca todas as ações globais do webhook n8n
- */
-export async function fetchGlobalStocks(): Promise<N8nStockQuote[]> {
-  const cached = getCached();
-  if (cached) return cached;
-
-  try {
-    console.log('Fetching global stocks from n8n webhook...');
-    const response = await fetch(N8N_WEBHOOK_URL, { method: 'GET' });
-
-    if (!response.ok) {
-      throw new Error(`n8n webhook error: ${response.status}`);
-    }
-
-    const text = await response.text();
-    console.log('n8n webhook raw response:', text.substring(0, 500));
-    
-    if (!text || text.trim().length === 0) {
-      console.warn('n8n webhook returned empty response');
-      return [];
-    }
-
-    let data: any;
-    try {
-      data = JSON.parse(text);
-    } catch (parseError) {
-      console.error('n8n webhook returned invalid JSON:', text.substring(0, 200));
-      return [];
-    }
-
-    // O webhook pode retornar um único objeto ou um array
-    const rawItems = Array.isArray(data) ? data : [data];
-
-    // Normalizar campos que podem vir como string formatada
-    const quotes: N8nStockQuote[] = rawItems
-      .filter((item: any) => item?.ticker)
-      .map((item: any) => ({
-        ticker: item.ticker,
-        nome: item.nome || item.ticker,
-        preco: parsePrice(item.preco),
-        variacao_diaria: parsePercent(item.variacao_diaria),
-        variacao_mensal: parsePercent(item.variacao_mensal),
-      }));
-
-    setCache(quotes);
-    return quotes;
-  } catch (error) {
-    console.error('Failed to fetch from n8n webhook:', error);
-    return [];
-  }
-}
-
 /** Remove prefixos monetários e converte para número */
 function parsePrice(value: any): number {
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
-    // Remove "US$ ", "R$ ", espaços e troca vírgula por ponto
     const cleaned = value.replace(/[A-Za-z$\s]/g, '').replace(',', '.');
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
@@ -100,6 +46,44 @@ function parsePercent(value: any): number {
   }
   return 0;
 }
+
+/**
+ * Busca todas as ações globais via Edge Function (proxy do n8n)
+ */
+export async function fetchGlobalStocks(): Promise<N8nStockQuote[]> {
+  const cached = getCached();
+  if (cached) return cached;
+
+  try {
+    console.log('Fetching global stocks via edge function proxy...');
+    const { data, error } = await supabase.functions.invoke('fetch-global-stocks');
+
+    if (error) {
+      console.error('Edge function error:', error);
+      return [];
+    }
+
+    const rawQuotes = data?.quotes || [];
+
+    const quotes: N8nStockQuote[] = rawQuotes.map((item: any) => ({
+      ticker: item.ticker,
+      nome: item.nome || item.ticker,
+      preco: parsePrice(item.preco),
+      variacao_diaria: parsePercent(item.variacao_diaria),
+      variacao_mensal: parsePercent(item.variacao_mensal),
+    }));
+
+    if (quotes.length > 0) {
+      setCache(quotes);
+    }
+    console.log(`Got ${quotes.length} global stock quotes`);
+    return quotes;
+  } catch (error) {
+    console.error('Failed to fetch global stocks:', error);
+    return [];
+  }
+}
+
 
 /**
  * Busca ações específicas por ticker
