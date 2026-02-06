@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ChatMessageData } from "@/components/chat/ChatMessage";
+import { useAuth } from "@/hooks/useAuth";
 
 const SESSION_KEY = "chatbot_session_id";
 
@@ -17,6 +18,7 @@ export function useChatbot() {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(getOrCreateSessionId);
+  const { profile } = useAuth();
 
   const sendMessage = useCallback(async (content: string) => {
     const userMessage: ChatMessageData = {
@@ -31,7 +33,11 @@ export function useChatbot() {
 
     try {
       const { data, error } = await supabase.functions.invoke("chat-webhook", {
-        body: { message: content, sessionId },
+        body: {
+          message: content,
+          sessionId,
+          isActivePlan: (profile as any)?.is_active_plan ?? false,
+        },
       });
 
       if (error) throw error;
@@ -56,7 +62,7 @@ export function useChatbot() {
     } finally {
       setIsLoading(false);
     }
-  }, [sessionId]);
+  }, [sessionId, profile]);
 
   const clearHistory = useCallback(() => {
     setMessages([]);
