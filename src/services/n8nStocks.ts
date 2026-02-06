@@ -40,7 +40,21 @@ export async function fetchGlobalStocks(): Promise<N8nStockQuote[]> {
       throw new Error(`n8n webhook error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const text = await response.text();
+    console.log('n8n webhook raw response:', text.substring(0, 500));
+    
+    if (!text || text.trim().length === 0) {
+      console.warn('n8n webhook returned empty response');
+      return [];
+    }
+
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error('n8n webhook returned invalid JSON:', text.substring(0, 200));
+      return [];
+    }
 
     // O webhook pode retornar um único objeto ou um array
     const rawItems = Array.isArray(data) ? data : [data];
