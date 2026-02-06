@@ -83,7 +83,7 @@ export function MainChart() {
                   }`}
                 >
                   {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                  {isPositive ? '+' : ''}{quote.changePercent.toFixed(2)}%
+                  {isPositive ? '+' : ''}{quote.changePercent.toFixed(2)}% <span className="text-xs text-muted-foreground font-normal">(1D)</span>
                 </span>
               </>
             ) : (
