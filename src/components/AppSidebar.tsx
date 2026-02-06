@@ -1,4 +1,4 @@
-import { TrendingUp, LayoutDashboard, Wallet, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, LayoutDashboard, Wallet, Settings, LogOut, ChevronLeft, ChevronRight, Bell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +15,7 @@ const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Mercado", url: "/mercado", icon: TrendingUp },
   { title: "Carteira", url: "/carteira", icon: Wallet },
+  { title: "Notificações", url: "/notificacoes", icon: Bell },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 

@@ -12,6 +12,7 @@ import Mercado from "./pages/Mercado";
 import AcaoDetalhes from "./pages/AcaoDetalhes";
 import Carteira from "./pages/Carteira";
 import Configuracoes from "./pages/Configuracoes";
+import Notificacoes from "./pages/Notificacoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,11 @@ const App = () => (
             <Route path="/carteira" element={
               <ProtectedRoute>
                 <Carteira />
+              </ProtectedRoute>
+            } />
+            <Route path="/notificacoes" element={
+              <ProtectedRoute>
+                <Notificacoes />
               </ProtectedRoute>
             } />
             <Route path="/configuracoes" element={
