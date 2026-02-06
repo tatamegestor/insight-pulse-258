@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { message, sessionId, isActivePlan } = await req.json();
+    const { message, sessionId, isActivePlan, email, fullName } = await req.json();
 
     if (!message) {
       return new Response(
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Processing message for session ${sessionId}: ${message.substring(0, 50)}... | isActivePlan: ${isActivePlan}`);
+    console.log(`Processing message for session ${sessionId}: ${message.substring(0, 50)}... | user: ${email} | isActivePlan: ${isActivePlan}`);
 
     // Call n8n webhook
     const n8nResponse = await fetch(webhookUrl, {
@@ -51,6 +51,8 @@ Deno.serve(async (req) => {
         message,
         sessionId,
         isActivePlan: !!isActivePlan,
+        email: email || "anonymous",
+        fullName: fullName || "Visitante",
         timestamp: new Date().toISOString(),
       }),
     });

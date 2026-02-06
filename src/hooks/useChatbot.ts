@@ -18,7 +18,7 @@ export function useChatbot() {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(getOrCreateSessionId);
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
 
   const sendMessage = useCallback(async (content: string) => {
     const userMessage: ChatMessageData = {
@@ -37,6 +37,8 @@ export function useChatbot() {
           message: content,
           sessionId,
           isActivePlan: (profile as any)?.is_active_plan ?? false,
+          email: user?.email ?? "anonymous",
+          fullName: profile?.full_name ?? "Visitante",
         },
       });
 
