@@ -1,5 +1,6 @@
 import { TrendingUp, LayoutDashboard, Wallet, Settings, LogOut, ChevronLeft, ChevronRight, Bell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-4">
+      <Link to="/" className="flex h-16 items-center gap-3 border-b border-sidebar-border px-4 cursor-pointer">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary">
           <TrendingUp className="h-5 w-5 text-primary-foreground" />
         </div>
@@ -59,7 +60,7 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
             Invest<span className="text-primary">IA</span>
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-3">
