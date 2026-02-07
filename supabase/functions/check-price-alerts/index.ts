@@ -18,10 +18,27 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // This function is called BY n8n when it detects a price target was hit
-    // n8n sends: { symbol, current_price, alert_id }
-    const body = await req.json();
-    const { symbol, current_price, alert_id } = body;
+    // Support GET (n8n polling) and POST (n8n trigger callback)
+    let symbol: string | undefined;
+    let current_price: number | undefined;
+    let alert_id: string | undefined;
+
+    if (req.method === "GET") {
+      // GET request from n8n to fetch all active alerts
+      const url = new URL(req.url);
+      alert_id = url.searchParams.get("alert_id") || undefined;
+      symbol = url.searchParams.get("symbol") || undefined;
+    } else {
+      // POST request with JSON body
+      try {
+        const body = await req.json();
+        symbol = body.symbol;
+        current_price = body.current_price;
+        alert_id = body.alert_id;
+      } catch {
+        // Empty body = treat as listing request
+      }
+    }
 
     if (!symbol && !alert_id) {
       // If called without params, return all active alerts for n8n to check
