@@ -164,7 +164,7 @@ export function MarketOverview() {
             </div>
 
             <TabsContent value="acoes-br" className="m-0">
-              <MarketTable data={brStocks.data} isLoading={brStocks.isLoading} />
+              <MarketTable data={brStocks.data} isLoading={brStocks.isLoading} showMonthly />
             </TabsContent>
             <TabsContent value="acoes-us" className="m-0">
               <MarketTable data={usStocks.data} isLoading={usStocks.isLoading} showMonthly />
