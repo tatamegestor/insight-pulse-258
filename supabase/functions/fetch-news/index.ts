@@ -5,49 +5,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const NEWS_API_KEY = Deno.env.get('NEWS_API_KEY');
+    const GNEWS_API_KEY = Deno.env.get('GNEWS_API_KEY');
     
-    if (!NEWS_API_KEY) {
-      console.error('NEWS_API_KEY not configured');
+    if (!GNEWS_API_KEY) {
+      console.error('GNEWS_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'News API key not configured' }),
+        JSON.stringify({ error: 'GNews API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse request body for parameters
     let pageSize = 5;
     
     if (req.method === 'POST') {
       try {
         const body = await req.json();
-        if (body.pageSize) pageSize = Math.min(body.pageSize, 20);
+        if (body.pageSize) pageSize = Math.min(body.pageSize, 10);
       } catch {
-        // Use defaults if body parsing fails
+        // Use defaults
       }
     }
 
-    // Stock market focused search query
-    const stockQuery = 'ações OR "bolsa de valores" OR ibovespa OR "mercado de ações" OR dividendos OR petrobras OR vale OR itaú OR bradesco OR magalu OR "b3" OR "day trade" OR "swing trade" OR "análise técnica" OR PETR4 OR VALE3 OR ITUB4';
+    const query = 'ibovespa OR b3 OR investimentos OR selic OR dolar OR euro OR petr4 OR vale3 OR itub4';
+    const url = `https://gnews.io/api/v4/search?lang=pt&q=${encodeURIComponent(query)}&max=${pageSize}&token=${GNEWS_API_KEY}`;
     
-    const url = `${NEWS_API_BASE_URL}/everything?q=${encodeURIComponent(stockQuery)}&language=pt&sortBy=publishedAt&pageSize=${pageSize * 2}&apiKey=${NEWS_API_KEY}`;
-    
-    console.log(`Fetching financial news, pageSize: ${pageSize}`);
+    console.log(`Fetching GNews, max: ${pageSize}`);
     
     const response = await fetch(url);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`News API error [${response.status}]:`, errorText);
+      console.error(`GNews API error [${response.status}]:`, errorText);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch news', details: errorText }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -56,25 +50,22 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    // Filter articles that have images and limit to requested size
-    const articles = (data.articles || [])
-      .filter((article: any) => article.urlToImage)
-      .slice(0, pageSize)
-      .map((article: any) => ({
-        source: {
-          id: article.source?.id || null,
-          name: article.source?.name || 'Unknown',
-        },
-        author: article.author || null,
-        title: article.title || '',
-        description: article.description || null,
-        url: article.url || '',
-        urlToImage: article.urlToImage || null,
-        publishedAt: article.publishedAt || new Date().toISOString(),
-        content: article.content || null,
-      }));
+    // Map GNews format to our NewsArticle format
+    const articles = (data.articles || []).map((article: any) => ({
+      source: {
+        id: null,
+        name: article.source?.name || 'Unknown',
+      },
+      author: null,
+      title: article.title || '',
+      description: article.description || null,
+      url: article.url || '',
+      urlToImage: article.image || null,
+      publishedAt: article.publishedAt || new Date().toISOString(),
+      content: article.content || null,
+    }));
 
-    console.log(`Found ${articles.length} financial news articles`);
+    console.log(`Found ${articles.length} articles from GNews`);
 
     return new Response(
       JSON.stringify({ articles, totalResults: articles.length }),
