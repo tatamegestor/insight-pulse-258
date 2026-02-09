@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/AppSidebar";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { FloatingChatbot } from "@/components/chat/FloatingChatbot";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {children}
         </div>
       </main>
+      <FloatingChatbot />
     </div>
   );
 }
