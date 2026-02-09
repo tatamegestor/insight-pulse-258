@@ -128,6 +128,42 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio: {
+        Row: {
+          avg_price: number
+          created_at: string
+          id: string
+          logo: string | null
+          name: string
+          quantity: number
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_price?: number
+          created_at?: string
+          id?: string
+          logo?: string | null
+          name: string
+          quantity?: number
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_price?: number
+          created_at?: string
+          id?: string
+          logo?: string | null
+          name?: string
+          quantity?: number
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           created_at: string
