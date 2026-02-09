@@ -117,10 +117,19 @@ serve(async (req) => {
     }
 
     const quotes: MarketQuote[] = (data.results || []).map(transformToMarketQuote);
+    
+    // Extract raw historical data per symbol for charts
+    const history: Record<string, any[]> = {};
+    for (const result of (data.results || [])) {
+      if (result.historicalDataPrice && result.historicalDataPrice.length > 0) {
+        history[result.symbol] = result.historicalDataPrice;
+      }
+    }
+    
     setCache(cacheKey, quotes);
 
     return new Response(
-      JSON.stringify({ quotes, source: 'api' }),
+      JSON.stringify({ quotes, history, source: 'api' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
