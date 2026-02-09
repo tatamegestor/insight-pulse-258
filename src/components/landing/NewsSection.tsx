@@ -10,7 +10,7 @@ import { ptBR } from "date-fns/locale";
 
 function NewsCardSkeleton() {
   return (
-    <Card className="overflow-hidden flex-shrink-0 w-[280px]">
+    <Card className="overflow-hidden flex-shrink-0 w-[240px] sm:w-[280px]">
       <Skeleton className="h-40 w-full" />
       <CardContent className="p-4">
         <Skeleton className="h-4 w-full mb-2" />
@@ -76,7 +76,7 @@ export function NewsSection() {
   const otherNews = news?.slice(1) || [];
 
   return (
-    <section className="py-6 bg-muted/30">
+    <section className="py-6 bg-muted/30" aria-labelledby="news-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -85,7 +85,7 @@ export function NewsSection() {
               <Newspaper className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Notícias do Mercado</h2>
+              <h2 id="news-heading" className="text-xl sm:text-2xl font-bold text-foreground">Notícias do Mercado</h2>
               <p className="text-sm text-muted-foreground">
                 As últimas notícias do mercado financeiro
               </p>
@@ -149,8 +149,9 @@ export function NewsSection() {
               size="icon"
               className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 shadow-lg hidden md:flex"
               onClick={() => scroll("left")}
+              aria-label="Notícias anteriores"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
           {canScrollRight && (
@@ -159,8 +160,9 @@ export function NewsSection() {
               size="icon"
               className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 shadow-lg hidden md:flex"
               onClick={() => scroll("right")}
+              aria-label="Próximas notícias"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
 
@@ -187,7 +189,7 @@ export function NewsSection() {
                   rel="noopener noreferrer"
                   className="group flex-shrink-0"
                 >
-                  <Card className="overflow-hidden w-[280px] h-full transition-shadow hover:shadow-lg">
+                  <Card className="overflow-hidden w-[240px] sm:w-[280px] h-full transition-shadow hover:shadow-lg">
                     <div className="relative h-40 overflow-hidden">
                       <img
                         src={article.urlToImage || "/placeholder.svg"}

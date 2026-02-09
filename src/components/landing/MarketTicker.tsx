@@ -43,8 +43,8 @@ export function MarketTicker() {
   }
 
   return (
-    <div className="bg-sidebar text-sidebar-foreground overflow-hidden py-3">
-      <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap">
+    <div className="bg-sidebar text-sidebar-foreground overflow-hidden py-2 sm:py-3" role="marquee" aria-label="Cotações do mercado em tempo real">
+      <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
         {[...tickers, ...tickers].map((ticker, index) => (
           <div
             key={index}
