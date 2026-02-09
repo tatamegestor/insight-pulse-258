@@ -21,6 +21,7 @@ import Contato from "./pages/Contato";
 import Ferramentas from "./pages/Ferramentas";
 import Analises from "./pages/Analises";
 import Blog from "./pages/Blog";
+import BlogPostPage from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/ferramentas" element={<Ferramentas />} />
             <Route path="/analises" element={<Analises />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
