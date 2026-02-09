@@ -5,25 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Cache em memória com TTL de 5 minutos
 const cache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
-
-interface BrapiQuote {
-  symbol: string;
-  shortName: string;
-  longName: string;
-  currency: string;
-  regularMarketPrice: number;
-  regularMarketChange: number;
-  regularMarketChangePercent: number;
-  regularMarketDayHigh: number;
-  regularMarketDayLow: number;
-  regularMarketVolume: number;
-  regularMarketOpen: number;
-  regularMarketPreviousClose: number;
-  regularMarketTime: string;
-}
 
 interface MarketQuote {
   symbol: string;
@@ -31,6 +14,7 @@ interface MarketQuote {
   price: number;
   change: number;
   changePercent: number;
+  changeMonthly?: number;
   volume: number;
   high: number;
   low: number;
@@ -44,7 +28,6 @@ interface MarketQuote {
 function getCached(key: string): any | null {
   const entry = cache.get(key);
   if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
-    console.log(`Cache hit for: ${key}`);
     return entry.data;
   }
   return null;
@@ -54,33 +37,46 @@ function setCache(key: string, data: any): void {
   cache.set(key, { data, timestamp: Date.now() });
 }
 
-function transformBrapiToMarketQuote(quote: BrapiQuote): MarketQuote {
+function calculateMonthlyChange(historicalData: any[], currentPrice: number): number | undefined {
+  if (!historicalData || historicalData.length === 0) return undefined;
+  // The first entry in the 1mo range is approximately 1 month ago
+  const oldestPrice = historicalData[0]?.close || historicalData[0]?.open;
+  if (!oldestPrice || oldestPrice === 0) return undefined;
+  return ((currentPrice - oldestPrice) / oldestPrice) * 100;
+}
+
+function transformToMarketQuote(result: any): MarketQuote {
+  const price = result.regularMarketPrice || 0;
+  const monthlyChange = calculateMonthlyChange(
+    result.historicalDataPrice,
+    price
+  );
+
   return {
-    symbol: quote.symbol,
-    name: quote.shortName || quote.longName || quote.symbol,
-    price: quote.regularMarketPrice || 0,
-    change: quote.regularMarketChange || 0,
-    changePercent: quote.regularMarketChangePercent || 0,
-    volume: quote.regularMarketVolume || 0,
-    high: quote.regularMarketDayHigh || 0,
-    low: quote.regularMarketDayLow || 0,
-    open: quote.regularMarketOpen || 0,
-    previousClose: quote.regularMarketPreviousClose || 0,
+    symbol: result.symbol,
+    name: result.longName || result.shortName || result.symbol,
+    price,
+    change: result.regularMarketChange || 0,
+    changePercent: result.regularMarketChangePercent || 0,
+    changeMonthly: monthlyChange,
+    volume: result.regularMarketVolume || 0,
+    high: result.regularMarketDayHigh || 0,
+    low: result.regularMarketDayLow || 0,
+    open: result.regularMarketOpen || 0,
+    previousClose: result.regularMarketPreviousClose || 0,
     market: 'BR',
-    currency: quote.currency === 'USD' ? 'USD' : 'BRL',
-    updatedAt: quote.regularMarketTime || new Date().toISOString(),
+    currency: result.currency === 'USD' ? 'USD' : 'BRL',
+    updatedAt: result.regularMarketTime || new Date().toISOString(),
   };
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const BRAPI_TOKEN = Deno.env.get('BRAPI_TOKEN');
-    
     const { symbols } = await req.json();
     
     if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
@@ -90,7 +86,6 @@ serve(async (req) => {
       );
     }
 
-    // Verificar cache
     const cacheKey = `brapi:${symbols.sort().join(',')}`;
     const cached = getCached(cacheKey);
     if (cached) {
@@ -100,16 +95,15 @@ serve(async (req) => {
       );
     }
 
-    // Fazer requisição para brapi.dev
     const symbolsParam = symbols.join(',');
-    let url = `https://brapi.dev/api/quote/${symbolsParam}`;
+    // Request with 1mo range to get historical data for monthly variation calculation
+    let url = `https://brapi.dev/api/quote/${symbolsParam}?range=1mo&interval=1d`;
     
-    // Adicionar token se disponível (permite mais ações além das 4 gratuitas)
     if (BRAPI_TOKEN) {
-      url += `?token=${BRAPI_TOKEN}`;
+      url += `&token=${BRAPI_TOKEN}`;
     }
 
-    console.log(`Fetching from brapi.dev: ${symbols.join(', ')}`);
+    console.log(`Fetching from brapi.dev (with history): ${symbols.join(', ')}`);
     
     const response = await fetch(url);
     const data = await response.json();
@@ -122,10 +116,7 @@ serve(async (req) => {
       );
     }
 
-    // Transformar dados para formato padronizado
-    const quotes: MarketQuote[] = (data.results || []).map(transformBrapiToMarketQuote);
-    
-    // Salvar no cache
+    const quotes: MarketQuote[] = (data.results || []).map(transformToMarketQuote);
     setCache(cacheKey, quotes);
 
     return new Response(
