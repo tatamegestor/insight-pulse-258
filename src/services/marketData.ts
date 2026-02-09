@@ -107,18 +107,21 @@ export async function getBrazilianStocks(symbols: string[]): Promise<MarketQuote
  * Converte uma cotação do n8n para o formato MarketQuote
  */
 function n8nToMarketQuote(q: N8nStockQuote): MarketQuote {
+  // variacao_diaria is already a percentage (e.g. 0.80 means 0.80%)
+  const changePercent = q.variacao_diaria;
+  const change = q.preco > 0 ? (changePercent / 100) * q.preco : 0;
   return {
     symbol: q.ticker,
     name: q.nome,
     price: q.preco,
-    change: q.variacao_diaria,
-    changePercent: q.preco > 0 ? (q.variacao_diaria / q.preco) * 100 : 0,
+    change,
+    changePercent,
     changeMonthly: q.variacao_mensal,
     volume: 0,
     high: q.preco,
     low: q.preco,
-    open: q.preco - q.variacao_diaria,
-    previousClose: q.preco - q.variacao_diaria,
+    open: q.preco - change,
+    previousClose: q.preco - change,
     market: 'US',
     currency: 'USD',
     updatedAt: new Date().toISOString(),
