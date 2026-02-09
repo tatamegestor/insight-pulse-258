@@ -201,6 +201,39 @@ export async function getStockHistory(symbol: string, market?: 'BR' | 'US'): Pro
         const today = new Date().toISOString().split('T')[0];
         const lastHistoryDate = history[history.length - 1]?.date;
         if (lastHistoryDate && lastHistoryDate < today) {
+          // Fill gap: add intermediate trading days between last history date and today
+          const lastDate = new Date(lastHistoryDate);
+          const todayDate = new Date(today);
+          const lastClose = history[history.length - 1].close;
+          const currentPrice = quote.price;
+          const daysBetween: Date[] = [];
+          
+          const d = new Date(lastDate);
+          d.setDate(d.getDate() + 1);
+          while (d < todayDate) {
+            const dow = d.getDay();
+            if (dow !== 0 && dow !== 6) { // skip weekends
+              daysBetween.push(new Date(d));
+            }
+            d.setDate(d.getDate() + 1);
+          }
+          
+          // Interpolate prices for gap days
+          const totalSteps = daysBetween.length + 1;
+          daysBetween.forEach((gapDate, i) => {
+            const ratio = (i + 1) / totalSteps;
+            const interpolatedPrice = lastClose + (currentPrice - lastClose) * ratio;
+            history.push({
+              date: gapDate.toISOString().split('T')[0],
+              open: interpolatedPrice,
+              high: interpolatedPrice,
+              low: interpolatedPrice,
+              close: parseFloat(interpolatedPrice.toFixed(2)),
+              volume: 0,
+            });
+          });
+          
+          // Add today's actual price
           history.push({
             date: today,
             open: quote.price,
