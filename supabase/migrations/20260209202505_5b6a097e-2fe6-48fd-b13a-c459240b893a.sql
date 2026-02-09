@@ -1,0 +1,1 @@
+ALTER TABLE public.portfolio ADD COLUMN purchased_at date DEFAULT CURRENT_DATE;

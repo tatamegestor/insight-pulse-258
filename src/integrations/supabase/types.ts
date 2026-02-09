@@ -135,6 +135,7 @@ export type Database = {
           id: string
           logo: string | null
           name: string
+          purchased_at: string | null
           quantity: number
           symbol: string
           updated_at: string
@@ -146,6 +147,7 @@ export type Database = {
           id?: string
           logo?: string | null
           name: string
+          purchased_at?: string | null
           quantity?: number
           symbol: string
           updated_at?: string
@@ -157,6 +159,7 @@ export type Database = {
           id?: string
           logo?: string | null
           name?: string
+          purchased_at?: string | null
           quantity?: number
           symbol?: string
           updated_at?: string

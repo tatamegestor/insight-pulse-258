@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { differenceInDays, differenceInMonths, differenceInYears, parseISO, format } from "date-fns";
 import { Wallet, TrendingUp, TrendingDown, PieChart, Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePortfolio, PortfolioItem, PortfolioInput } from "@/hooks/usePortfolio";
@@ -225,6 +226,7 @@ export default function Carteira() {
                     <th className="text-right p-4 text-sm font-medium text-muted-foreground">Preço Atual</th>
                     <th className="text-right p-4 text-sm font-medium text-muted-foreground">Valor Total</th>
                     <th className="text-right p-4 text-sm font-medium text-muted-foreground">Rentabilidade</th>
+                    <th className="text-center p-4 text-sm font-medium text-muted-foreground">Compra / Tempo</th>
                     <th className="text-right p-4 text-sm font-medium text-muted-foreground">Ações</th>
                   </tr>
                 </thead>
@@ -289,6 +291,26 @@ export default function Carteira() {
                             {isPositive ? "+" : ""}
                             {profitPercent.toFixed(2)}%
                           </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          {stock.purchased_at ? (() => {
+                            const purchaseDate = parseISO(stock.purchased_at);
+                            const today = new Date();
+                            const years = differenceInYears(today, purchaseDate);
+                            const months = differenceInMonths(today, purchaseDate) % 12;
+                            const days = differenceInDays(today, purchaseDate);
+                            const timeLabel = years > 0
+                              ? `${years}a ${months}m`
+                              : months > 0
+                              ? `${months}m ${days - months * 30}d`
+                              : `${days}d`;
+                            return (
+                              <div>
+                                <p className="text-xs text-muted-foreground">{format(purchaseDate, 'dd/MM/yyyy')}</p>
+                                <p className="text-xs font-medium text-foreground">{timeLabel}</p>
+                              </div>
+                            );
+                          })() : <span className="text-xs text-muted-foreground">—</span>}
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end gap-2">

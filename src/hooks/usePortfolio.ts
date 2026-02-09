@@ -10,6 +10,7 @@ export interface PortfolioItem {
   quantity: number;
   avg_price: number;
   logo: string;
+  purchased_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -20,6 +21,7 @@ export interface PortfolioInput {
   quantity: number;
   avg_price: number;
   logo?: string;
+  purchased_at?: string;
 }
 
 export function usePortfolio() {
@@ -56,6 +58,7 @@ export function usePortfolio() {
           quantity: input.quantity,
           avg_price: input.avg_price,
           logo: input.logo || '📈',
+          purchased_at: input.purchased_at || new Date().toISOString().split('T')[0],
         })
         .select()
         .single();
@@ -80,6 +83,7 @@ export function usePortfolio() {
           quantity: input.quantity,
           avg_price: input.avg_price,
           logo: input.logo,
+          purchased_at: input.purchased_at,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
