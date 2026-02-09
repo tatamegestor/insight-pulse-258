@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
+import { TrendingUp, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
@@ -42,7 +43,7 @@ export default function Login() {
           navigate("/dashboard");
         }
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, phoneNumber);
         if (error) {
           toast({
             variant: "destructive",
@@ -154,11 +155,11 @@ export default function Login() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-foreground">
-                  Nome completo
-                </Label>
-                <div className="relative">
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-foreground">
+                    Nome completo
+                  </Label>
                   <Input
                     id="fullName"
                     type="text"
@@ -168,7 +169,26 @@ export default function Login() {
                     className="h-12 bg-muted/50 border-border focus:border-primary focus:ring-primary"
                   />
                 </div>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber" className="text-foreground">
+                    WhatsApp
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="pl-10 h-12 bg-muted/50 border-border focus:border-primary focus:ring-primary"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Usado para receber alertas de preço via WhatsApp
+                  </p>
+                </div>
+              </>
             )}
             
             <div className="space-y-2">
