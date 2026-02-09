@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RankingItemProps {
   symbol: string;
@@ -47,6 +49,35 @@ export function RankingCard() {
 
   const isLoading = gainersLoading || losersLoading;
   const hasData = (gainers && gainers.length > 0) || (losers && losers.length > 0);
+
+  // Fetch real company names from stock_prices
+  const allSymbols = [
+    ...(gainers || []).map(s => s.symbol),
+    ...(losers || []).map(s => s.symbol),
+  ];
+
+  const { data: stockNames = {} } = useQuery({
+    queryKey: ['stockNames', allSymbols.join(',')],
+    queryFn: async () => {
+      if (allSymbols.length === 0) return {};
+      const { data } = await supabase
+        .from('stock_prices')
+        .select('symbol, long_name, short_name')
+        .in('symbol', allSymbols);
+      
+      const names: Record<string, string> = {};
+      if (data) {
+        for (const row of data) {
+          if (!names[row.symbol] && (row.long_name || row.short_name)) {
+            names[row.symbol] = row.long_name || row.short_name || row.symbol;
+          }
+        }
+      }
+      return names;
+    },
+    enabled: allSymbols.length > 0,
+    staleTime: 30 * 60 * 1000,
+  });
 
   return (
     <Card className="glass-card border-border">
@@ -104,7 +135,7 @@ export function RankingCard() {
                     <RankingItem
                       key={stock.id}
                       symbol={stock.symbol}
-                      name={stock.name}
+                      name={stockNames[stock.symbol] || stock.name}
                       change={stock.daily_change}
                       position={index + 1}
                       isGainer={true}
@@ -124,7 +155,7 @@ export function RankingCard() {
                     <RankingItem
                       key={stock.id}
                       symbol={stock.symbol}
-                      name={stock.name}
+                      name={stockNames[stock.symbol] || stock.name}
                       change={stock.daily_change}
                       position={index + 1}
                       isGainer={false}
