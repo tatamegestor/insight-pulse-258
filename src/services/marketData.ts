@@ -179,9 +179,23 @@ export async function getStockHistory(symbol: string, market?: 'BR' | 'US'): Pro
       setCachedHistory(cacheKey, history);
       return history;
     } else {
-      // Para BR, brapi não tem histórico gratuito, retornar vazio
-      console.log('Historical data not available for BR stocks in free tier');
-      return [];
+      // Para BR, buscar histórico via brapi.dev (plano pago com range=1mo)
+      const { data, error } = await supabase.functions.invoke('fetch-brazilian-stocks', {
+        body: { symbols: [symbol] }
+      });
+
+      if (error) throw error;
+
+      const history: TimeSeriesData[] = (data?.history?.[symbol] || []).map((item: any) => ({
+        date: new Date(item.date * 1000).toISOString().split('T')[0],
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close,
+        volume: item.volume,
+      }));
+      setCachedHistory(cacheKey, history);
+      return history;
     }
   } catch (error) {
     console.error('Failed to fetch stock history:', error);
