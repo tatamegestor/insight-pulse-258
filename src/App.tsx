@@ -14,6 +14,13 @@ import Carteira from "./pages/Carteira";
 import Configuracoes from "./pages/Configuracoes";
 import Notificacoes from "./pages/Notificacoes";
 import NotFound from "./pages/NotFound";
+import Sobre from "./pages/Sobre";
+import Termos from "./pages/Termos";
+import Privacidade from "./pages/Privacidade";
+import Contato from "./pages/Contato";
+import Ferramentas from "./pages/Ferramentas";
+import Analises from "./pages/Analises";
+import Blog from "./pages/Blog";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +34,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/sobre" element={<Sobre />} />
+            <Route path="/termos" element={<Termos />} />
+            <Route path="/privacidade" element={<Privacidade />} />
+            <Route path="/contato" element={<Contato />} />
+            <Route path="/ferramentas" element={<Ferramentas />} />
+            <Route path="/analises" element={<Analises />} />
+            <Route path="/blog" element={<Blog />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />

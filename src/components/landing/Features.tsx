@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Bot, LineChart, Bell, Wallet, Shield, Zap } from "lucide-react";
 
 const features = [
@@ -6,36 +7,42 @@ const features = [
     title: "Insights com IA",
     description:
       "Nossa inteligência artificial analisa o mercado 24/7 e te envia alertas personalizados sobre oportunidades.",
+    href: "/analises",
   },
   {
     icon: LineChart,
     title: "Análise Técnica",
     description:
       "Gráficos avançados com indicadores técnicos para você tomar decisões baseadas em dados.",
+    href: "/ferramentas",
   },
   {
     icon: Bell,
     title: "Alertas em Tempo Real",
     description:
       "Receba notificações instantâneas sobre movimentações importantes nas suas ações.",
+    href: "/ferramentas",
   },
   {
     icon: Wallet,
     title: "Gestão de Carteira",
     description:
       "Acompanhe todos os seus investimentos em um só lugar com visão consolidada.",
+    href: "/ferramentas",
   },
   {
     icon: Shield,
     title: "Segurança Total",
     description:
       "Seus dados protegidos com criptografia de ponta e autenticação em duas etapas.",
+    href: "/sobre",
   },
   {
     icon: Zap,
     title: "Performance",
     description:
       "Plataforma otimizada para carregar dados em milissegundos, sem travamentos.",
+    href: "/sobre",
   },
 ];
 
@@ -55,8 +62,9 @@ export function Features() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div
+            <Link
               key={index}
+              to={feature.href}
               className="group bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
             >
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
@@ -66,7 +74,7 @@ export function Features() {
                 {feature.title}
               </h3>
               <p className="text-muted-foreground">{feature.description}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

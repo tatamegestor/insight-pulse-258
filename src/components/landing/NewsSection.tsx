@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Newspaper, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -214,10 +215,12 @@ export function NewsSection() {
 
         {/* View More Link */}
         <div className="text-right mt-4">
-          <Button variant="link" className="text-primary font-medium">
-            Mostrar Mais Notícias
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
+          <Link to="/blog">
+            <Button variant="link" className="text-primary font-medium">
+              Mostrar Mais Notícias
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
