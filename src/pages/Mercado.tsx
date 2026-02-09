@@ -141,9 +141,6 @@ export default function Mercado() {
                   </TableRow>
                 ) : (
                   filteredStocks.map((stock) => {
-                    const dailyChange = stock.brapi_change_percent ?? stock.variation_daily ?? 0;
-                    const isDailyPositive = dailyChange >= 0;
-
                     return (
                       <TableRow
                         key={stock.id}
@@ -175,7 +172,7 @@ export default function Mercado() {
                           {formatPrice(stock.current_price, stock.currency)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <VariationBadge value={formatVariation(dailyChange)} />
+                          <VariationBadge value={formatVariation(stock.variation_daily ?? stock.brapi_change_percent ?? 0)} />
                         </TableCell>
                         <TableCell className="text-right">
                           <VariationBadge value={formatVariation(stock.brapi_change_percent)} />
