@@ -7,6 +7,7 @@ import { usePortfolio, PortfolioItem, PortfolioInput } from "@/hooks/usePortfoli
 import { StockFormDialog } from "@/components/portfolio/StockFormDialog";
 import { useToast } from "@/hooks/use-toast";
 import { getStockQuote, detectMarket } from "@/services/marketData";
+import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Carteira() {
@@ -15,18 +16,41 @@ export default function Carteira() {
   const [editingStock, setEditingStock] = useState<PortfolioItem | null>(null);
   const { toast } = useToast();
 
-  // Fetch current prices for all stocks in portfolio
+  // Fetch current prices and logos for all stocks in portfolio
   const { data: currentPrices } = useQuery({
     queryKey: ['portfolioPrices', portfolio.map(s => s.symbol).join(',')],
     queryFn: async () => {
-      const prices: Record<string, { price: number; currency: string }> = {};
+      const prices: Record<string, { price: number; currency: string; logoUrl?: string }> = {};
+      
+      // Also try to get logos from stock_prices table
+      const symbols = portfolio.map(s => s.symbol);
+      const { data: dbStocks } = await supabase
+        .from('stock_prices')
+        .select('symbol, logo_url, current_price, currency')
+        .in('symbol', symbols);
+      
+      const dbMap = new Map<string, { logo_url: string | null; price: number; currency: string | null }>();
+      if (dbStocks) {
+        for (const s of dbStocks) {
+          if (!dbMap.has(s.symbol)) {
+            dbMap.set(s.symbol, { logo_url: s.logo_url, price: Number(s.current_price), currency: s.currency });
+          }
+        }
+      }
+
       for (const stock of portfolio) {
-        const quote = await getStockQuote(stock.symbol);
-        if (quote) {
+        const dbEntry = dbMap.get(stock.symbol);
+        if (dbEntry) {
           prices[stock.symbol] = { 
-            price: quote.price, 
-            currency: quote.currency 
+            price: dbEntry.price, 
+            currency: dbEntry.currency || 'USD',
+            logoUrl: dbEntry.logo_url || undefined,
           };
+        } else {
+          const quote = await getStockQuote(stock.symbol);
+          if (quote) {
+            prices[stock.symbol] = { price: quote.price, currency: quote.currency };
+          }
         }
       }
       return prices;
@@ -251,7 +275,11 @@ export default function Carteira() {
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-xl">{stock.logo}</span>
+                            {priceInfo?.logoUrl ? (
+                              <img src={priceInfo.logoUrl} alt={stock.symbol} className="w-8 h-8 rounded-full object-contain bg-muted" />
+                            ) : (
+                              <span className="text-xl w-8 h-8 flex items-center justify-center">{stock.logo || '📈'}</span>
+                            )}
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="ticker-badge">{stock.symbol}</span>

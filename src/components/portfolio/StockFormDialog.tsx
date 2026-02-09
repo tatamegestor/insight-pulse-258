@@ -13,7 +13,7 @@ interface StockFormDialogProps {
   isLoading?: boolean;
 }
 
-const STOCK_EMOJIS = ['📈', '💹', '🏦', '🛢️', '⛏️', '⚙️', '🏭', '💊', '🛒', '✈️'];
+// Logos are now fetched automatically from the database
 
 export function StockFormDialog({ 
   open, 
@@ -133,25 +133,7 @@ export function StockFormDialog({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label>Ícone</Label>
-            <div className="flex flex-wrap gap-2">
-              {STOCK_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setLogo(emoji)}
-                  className={`text-2xl p-2 rounded-lg transition-all ${
-                    logo === emoji
-                      ? 'bg-primary/20 ring-2 ring-primary'
-                      : 'bg-muted/50 hover:bg-muted'
-                  }`}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Logo is fetched automatically from market data */}
 
           <div className="flex gap-3 pt-4">
             <Button
