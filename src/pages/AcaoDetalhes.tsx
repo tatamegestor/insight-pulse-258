@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { ArrowLeft, TrendingUp, TrendingDown, Bot, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   XAxis,
@@ -13,7 +14,7 @@ import {
   AreaChart,
 } from "recharts";
 import { useStockPrice } from "@/hooks/useStockPrices";
-import { useStockHistory, detectMarket } from "@/hooks/useMarketData";
+import { useStockHistory, useStockQuote, detectMarket } from "@/hooks/useMarketData";
 import { format } from "date-fns";
 
 const CustomTooltip = ({ active, payload, label, currencySymbol }: any) => {
@@ -37,24 +38,44 @@ export default function AcaoDetalhes() {
   const market = detectMarket(symbol);
   const currencySymbol = market === 'BR' ? 'R$' : '$';
 
-  // Dados reais do banco (stock_prices)
+  // Dados do banco (stock_prices)
   const { data: stockData, isLoading: stockLoading } = useStockPrice(symbol);
+  // Fallback: dados em tempo real da API quando não está no banco
+  const { data: liveQuote, isLoading: liveLoading } = useStockQuote(symbol);
   // Histórico real para gráfico
   const { data: timeSeries, isLoading: timeSeriesLoading } = useStockHistory(symbol, market);
 
-  // Preparar dados do gráfico
-  const chartData = timeSeries
-    ?.slice(0, 30)
-    .reverse()
-    .map(item => ({
-      date: format(new Date(item.date), 'dd/MM'),
-      price: item.close,
-    })) || [];
+  // Use DB data if available, otherwise build from live API
+  const isFromApi = !stockData && !!liveQuote;
+  const displayData = stockData || (liveQuote ? {
+    symbol: liveQuote.symbol,
+    current_price: liveQuote.price,
+    short_name: liveQuote.name,
+    long_name: liveQuote.name,
+    open_price: liveQuote.open,
+    high_price: liveQuote.high,
+    low_price: liveQuote.low,
+    volume: liveQuote.volume,
+    variation_daily: liveQuote.changePercent,
+    brapi_change_percent: liveQuote.changePercent,
+    currency: liveQuote.currency,
+    logo_url: null,
+    trend: null,
+    trend_emoji: null,
+    auto_insight: null,
+    fifty_two_week_high: null,
+    fifty_two_week_low: null,
+    price_earnings: null,
+    market_cap: null,
+    volatility_level: null,
+    position_52week_range: null,
+    range_position: null,
+  } : null);
 
-  const dailyChange = stockData?.brapi_change_percent ?? stockData?.variation_daily ?? 0;
-  const isPositive = dailyChange >= 0;
+  const isLoading = stockLoading || (!stockData && liveLoading);
 
-  if (stockLoading) {
+
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-64">
@@ -65,7 +86,7 @@ export default function AcaoDetalhes() {
     );
   }
 
-  if (!stockData) {
+  if (!displayData) {
     return (
       <DashboardLayout>
         <div className="space-y-4">
@@ -73,23 +94,35 @@ export default function AcaoDetalhes() {
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar ao Mercado
           </Button>
           <div className="text-center py-16 text-muted-foreground">
-            <p className="text-xl">Ação "{symbol}" não encontrada no banco de dados.</p>
+            <p className="text-xl">Ação "{symbol}" não encontrada.</p>
           </div>
         </div>
       </DashboardLayout>
     );
   }
 
+  // Preparar dados do gráfico
+  const chartData = timeSeries
+    ?.slice(0, 30)
+    .reverse()
+    .map(item => ({
+      date: format(new Date(item.date), 'dd/MM'),
+      price: item.close,
+    })) || [];
+
+  const dailyChange = displayData.brapi_change_percent ?? displayData.variation_daily ?? 0;
+  const isPositive = dailyChange >= 0;
+
   const metrics = [
-    { label: "Abertura", value: stockData.open_price ? `${currencySymbol} ${Number(stockData.open_price).toFixed(2)}` : "—" },
-    { label: "Máxima", value: stockData.high_price ? `${currencySymbol} ${Number(stockData.high_price).toFixed(2)}` : "—" },
-    { label: "Mínima", value: stockData.low_price ? `${currencySymbol} ${Number(stockData.low_price).toFixed(2)}` : "—" },
-    { label: "Volume", value: stockData.volume ? `${(Number(stockData.volume) / 1000000).toFixed(1)}M` : "—" },
-    { label: "Máx. 52 sem.", value: stockData.fifty_two_week_high ? `${currencySymbol} ${Number(stockData.fifty_two_week_high).toFixed(2)}` : "—" },
-    { label: "Mín. 52 sem.", value: stockData.fifty_two_week_low ? `${currencySymbol} ${Number(stockData.fifty_two_week_low).toFixed(2)}` : "—" },
-    { label: "P/L", value: stockData.price_earnings ? Number(stockData.price_earnings).toFixed(2) : "—" },
-    { label: "Market Cap", value: stockData.market_cap ? `${currencySymbol} ${(Number(stockData.market_cap) / 1e9).toFixed(1)}B` : "—" },
-    { label: "Volatilidade", value: stockData.volatility_level || "—" },
+    { label: "Abertura", value: displayData.open_price ? `${currencySymbol} ${Number(displayData.open_price).toFixed(2)}` : "—" },
+    { label: "Máxima", value: displayData.high_price ? `${currencySymbol} ${Number(displayData.high_price).toFixed(2)}` : "—" },
+    { label: "Mínima", value: displayData.low_price ? `${currencySymbol} ${Number(displayData.low_price).toFixed(2)}` : "—" },
+    { label: "Volume", value: displayData.volume ? `${(Number(displayData.volume) / 1000000).toFixed(1)}M` : "—" },
+    { label: "Máx. 52 sem.", value: displayData.fifty_two_week_high ? `${currencySymbol} ${Number(displayData.fifty_two_week_high).toFixed(2)}` : "—" },
+    { label: "Mín. 52 sem.", value: displayData.fifty_two_week_low ? `${currencySymbol} ${Number(displayData.fifty_two_week_low).toFixed(2)}` : "—" },
+    { label: "P/L", value: displayData.price_earnings ? Number(displayData.price_earnings).toFixed(2) : "—" },
+    { label: "Market Cap", value: displayData.market_cap ? `${currencySymbol} ${(Number(displayData.market_cap) / 1e9).toFixed(1)}B` : "—" },
+    { label: "Volatilidade", value: displayData.volatility_level || "—" },
   ];
 
   return (
@@ -103,25 +136,26 @@ export default function AcaoDetalhes() {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 animate-fade-in">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              {stockData.logo_url ? (
-                <img src={stockData.logo_url} alt={symbol} className="h-10 w-10 rounded" />
+              {displayData.logo_url ? (
+                <img src={displayData.logo_url} alt={symbol} className="h-10 w-10 rounded" />
               ) : (
                 <span className="text-3xl">📈</span>
               )}
               <h1 className="text-4xl font-bold text-foreground">{symbol}</h1>
-              {stockData.trend_emoji && <span className="text-2xl">{stockData.trend_emoji}</span>}
+              {displayData.trend_emoji && <span className="text-2xl">{displayData.trend_emoji}</span>}
               <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary font-medium">
                 {market === 'BR' ? '🇧🇷 B3' : '🇺🇸 NASDAQ'}
               </span>
+              {isFromApi && <Badge variant="secondary" className="text-xs">Tempo real</Badge>}
             </div>
-            <p className="text-xl text-muted-foreground">{stockData.long_name || stockData.short_name || symbol}</p>
-            {stockData.trend && (
-              <span className="text-xs text-muted-foreground">Tendência: {stockData.trend}</span>
+            <p className="text-xl text-muted-foreground">{displayData.long_name || displayData.short_name || symbol}</p>
+            {displayData.trend && (
+              <span className="text-xs text-muted-foreground">Tendência: {displayData.trend}</span>
             )}
           </div>
           <div className="text-right">
             <p className="text-4xl font-bold font-mono text-foreground">
-              {currencySymbol} {Number(stockData.current_price).toFixed(2)}
+              {currencySymbol} {Number(displayData.current_price).toFixed(2)}
             </p>
             <p className={`flex items-center justify-end gap-1 text-xl font-semibold font-mono ${isPositive ? "text-success" : "text-destructive"}`}>
               {isPositive ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
@@ -188,19 +222,19 @@ export default function AcaoDetalhes() {
             </div>
 
             {/* Range Position */}
-            {stockData.position_52week_range !== null && stockData.position_52week_range !== undefined && (
+            {displayData.position_52week_range !== null && displayData.position_52week_range !== undefined && (
               <div className="glass-card p-4">
                 <p className="text-sm text-muted-foreground mb-2">Posição no range de 52 semanas</p>
                 <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-destructive via-warning to-success"
-                    style={{ width: `${Math.min(100, Math.max(0, Number(stockData.position_52week_range)))}%` }}
+                    style={{ width: `${Math.min(100, Math.max(0, Number(displayData.position_52week_range)))}%` }}
                   />
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>{stockData.fifty_two_week_low ? `${currencySymbol} ${Number(stockData.fifty_two_week_low).toFixed(2)}` : ''}</span>
-                  <span>{stockData.range_position || ''}</span>
-                  <span>{stockData.fifty_two_week_high ? `${currencySymbol} ${Number(stockData.fifty_two_week_high).toFixed(2)}` : ''}</span>
+                  <span>{displayData.fifty_two_week_low ? `${currencySymbol} ${Number(displayData.fifty_two_week_low).toFixed(2)}` : ''}</span>
+                  <span>{displayData.range_position || ''}</span>
+                  <span>{displayData.fifty_two_week_high ? `${currencySymbol} ${Number(displayData.fifty_two_week_high).toFixed(2)}` : ''}</span>
                 </div>
               </div>
             )}
@@ -215,10 +249,10 @@ export default function AcaoDetalhes() {
                 </h3>
               </div>
 
-              {stockData.auto_insight ? (
+              {displayData.auto_insight ? (
                 <div className="p-4 rounded-lg bg-muted/50 border border-border">
                   <p className="text-foreground/90 leading-relaxed text-base">
-                    {stockData.auto_insight}
+                    {displayData.auto_insight}
                   </p>
                 </div>
               ) : (
@@ -228,22 +262,22 @@ export default function AcaoDetalhes() {
               )}
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-                {stockData.trend && (
+                {displayData.trend && (
                   <div className="p-3 rounded-lg bg-muted/30 border border-border text-center">
                     <p className="text-xs text-muted-foreground">Tendência</p>
-                    <p className="text-lg font-semibold mt-1">{stockData.trend_emoji} {stockData.trend}</p>
+                    <p className="text-lg font-semibold mt-1">{displayData.trend_emoji} {displayData.trend}</p>
                   </div>
                 )}
-                {stockData.volatility_level && (
+                {displayData.volatility_level && (
                   <div className="p-3 rounded-lg bg-muted/30 border border-border text-center">
                     <p className="text-xs text-muted-foreground">Volatilidade</p>
-                    <p className="text-lg font-semibold mt-1">{stockData.volatility_level}</p>
+                    <p className="text-lg font-semibold mt-1">{displayData.volatility_level}</p>
                   </div>
                 )}
-                {stockData.range_position && (
+                {displayData.range_position && (
                   <div className="p-3 rounded-lg bg-muted/30 border border-border text-center">
                     <p className="text-xs text-muted-foreground">Posição Range</p>
-                    <p className="text-lg font-semibold mt-1">{stockData.range_position}</p>
+                    <p className="text-lg font-semibold mt-1">{displayData.range_position}</p>
                   </div>
                 )}
               </div>
