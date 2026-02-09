@@ -30,7 +30,7 @@ export function Hero() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Link to="/login">
+              <Link to="/login?tab=register">
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base">
                   Comece Grátis
                   <ArrowRight className="ml-2 h-5 w-5" />

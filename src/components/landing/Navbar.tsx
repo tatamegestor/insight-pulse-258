@@ -105,7 +105,7 @@ export function Navbar() {
                   Entrar
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/login?tab=register">
                 <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                   Cadastre-se Grátis
                 </Button>
@@ -151,7 +151,7 @@ export function Navbar() {
                   Entrar
                 </Button>
               </Link>
-              <Link to="/login" onClick={() => setIsOpen(false)} className="block">
+              <Link to="/login?tab=register" onClick={() => setIsOpen(false)} className="block">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   Cadastre-se Grátis
                 </Button>
