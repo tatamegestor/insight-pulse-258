@@ -194,6 +194,24 @@ export async function getStockHistory(symbol: string, market?: 'BR' | 'US'): Pro
         close: item.close,
         volume: item.volume,
       }));
+
+      // Append current quote as latest data point if history is behind today
+      const quote = (data?.quotes || []).find((q: any) => q.symbol === symbol);
+      if (quote && history.length > 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const lastHistoryDate = history[history.length - 1]?.date;
+        if (lastHistoryDate && lastHistoryDate < today) {
+          history.push({
+            date: today,
+            open: quote.price,
+            high: quote.high || quote.price,
+            low: quote.low || quote.price,
+            close: quote.price,
+            volume: quote.volume || 0,
+          });
+        }
+      }
+
       setCachedHistory(cacheKey, history);
       return history;
     }
