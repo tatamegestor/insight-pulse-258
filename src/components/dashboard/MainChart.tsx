@@ -50,7 +50,7 @@ export function MainChart() {
 
   // Preparar dados do gráfico
   const chartData = history
-    .slice(0, 20)
+    .slice(0, 30)
     .reverse()
     .map(item => ({
       time: format(new Date(item.date), 'dd/MM'),
@@ -104,7 +104,7 @@ export function MainChart() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4" />
-            <span>Últimos 20 dias</span>
+            <span>Últimos 30 dias</span>
           </div>
           <Button
             variant="ghost"
