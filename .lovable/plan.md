@@ -1,40 +1,69 @@
 
 
-# Busca Dinâmica de Ações na Tela de Mercado
+# Completar o Sistema SaaS - Isolamento de Dados por Usuario
+
+## Situacao Atual
+
+O sistema ja possui boa parte da estrutura SaaS implementada:
+
+| Recurso | Status | Detalhes |
+|---------|--------|----------|
+| Autenticacao | OK | Email/senha + Google OAuth |
+| Perfis (nome, telefone) | OK | Tabela `profiles` com RLS por `user_id` |
+| Alertas de preco | OK | Tabela `price_alerts` com RLS por `user_id` |
+| Rotas protegidas | OK | Todas as paginas internas usam `ProtectedRoute` |
+| **Carteira (portfolio)** | **FALTANDO** | **Tabela nao existe no banco** |
+
+## O Que Precisa Ser Feito
+
+### 1. Criar a tabela `portfolio` no banco de dados
+
+Criar a tabela com as colunas necessarias (symbol, name, quantity, avg_price, logo, user_id) e com RLS habilitado, garantindo que cada usuario so veja, edite e delete seus proprios ativos.
+
+Politicas RLS:
+- SELECT: somente onde `auth.uid() = user_id`
+- INSERT: somente onde `auth.uid() = user_id`
+- UPDATE: somente onde `auth.uid() = user_id`
+- DELETE: somente onde `auth.uid() = user_id`
+
+### 2. Nenhuma alteracao de codigo necessaria
+
+O codigo do frontend (`usePortfolio.ts`, `Carteira.tsx`) ja esta pronto e filtra por `user_id`. So precisa da tabela no banco.
 
 ## Resumo
 
-Adicionar busca dinâmica no campo de pesquisa da tela de Mercado que consulta a API brapi.dev em tempo real para qualquer ação brasileira (com histórico de 30 dias do plano pago) e ações globais (sem histórico).
+Apos criar a tabela `portfolio` com RLS, o sistema estara 100% funcional como SaaS:
+- Cada usuario tera seus proprios dados isolados (perfil, carteira, alertas)
+- Nenhum usuario consegue acessar dados de outro
+- Todas as paginas exigem autenticacao
 
-## O que muda para o usuário
+## Detalhes Tecnicos
 
-- Ao digitar 3+ caracteres no campo de busca, além de filtrar as ações monitoradas, aparece uma seção "Resultados da busca na B3" com ações vindas diretamente da API
-- Clicar em um resultado leva à página de detalhes com gráfico de 30 dias (para ações BR)
-- Ações já monitoradas no banco são identificadas com badge visual
+```sql
+CREATE TABLE public.portfolio (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  symbol TEXT NOT NULL,
+  name TEXT NOT NULL,
+  quantity NUMERIC NOT NULL DEFAULT 0,
+  avg_price NUMERIC NOT NULL DEFAULT 0,
+  logo TEXT DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-## Detalhes técnicos
+ALTER TABLE public.portfolio ENABLE ROW LEVEL SECURITY;
 
-### 1. Novo hook: `src/hooks/useSearchStocks.ts`
-- Debounce de 500ms no termo de busca
-- Chama Edge Function `search-stocks` quando query >= 3 caracteres
-- Retorna lista de resultados da API
+CREATE POLICY "Users can view own portfolio" ON public.portfolio
+  FOR SELECT USING (auth.uid() = user_id);
 
-### 2. Atualizar `src/pages/Mercado.tsx`
-- Integrar o hook `useSearchStocks` ao campo de busca existente
-- Manter filtro local na tabela principal (ações monitoradas)
-- Adicionar seção abaixo da tabela com resultados da API quando houver busca
-- Cada resultado mostra: ticker, nome, preço, variação
-- Botão "Ver Detalhes" navega para `/acao/{symbol}`
+CREATE POLICY "Users can insert own portfolio" ON public.portfolio
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-### 3. Atualizar `src/pages/AcaoDetalhes.tsx`
-- Quando a ação não existe na tabela `stock_prices`, buscar dados em tempo real via `fetch-brazilian-stocks` (inclui histórico de 30 dias do plano pago)
-- Renderizar gráfico com dados históricos reais
-- Para ações US não monitoradas: mostrar apenas cotação atual
+CREATE POLICY "Users can update own portfolio" ON public.portfolio
+  FOR UPDATE USING (auth.uid() = user_id);
 
-### 4. Atualizar secret BRAPI_TOKEN
-- Atualizar o valor do secret para a key do plano pago fornecida pelo usuário
+CREATE POLICY "Users can delete own portfolio" ON public.portfolio
+  FOR DELETE USING (auth.uid() = user_id);
+```
 
-### Arquivos impactados
-1. `src/hooks/useSearchStocks.ts` -- novo
-2. `src/pages/Mercado.tsx` -- adicionar seção de resultados da busca
-3. `src/pages/AcaoDetalhes.tsx` -- fallback para ações não monitoradas
