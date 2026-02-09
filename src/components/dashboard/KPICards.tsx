@@ -4,7 +4,6 @@ import { useDashboardKPIs } from "@/hooks/useMarketData";
 interface KPIData {
   title: string;
   ticker: string;
-  name: string;
   value: string;
   price: string;
   isPositive: boolean;
@@ -17,9 +16,9 @@ export function KPICards() {
   const calculateKPIs = (): KPIData[] => {
     if (!quotes || quotes.length === 0) {
       return [
-        { title: "Maior Alta", ticker: isLoading ? "Carregando..." : "—", name: "", value: "—", price: "—", isPositive: true, icon: TrendingUp },
-        { title: "Maior Baixa", ticker: isLoading ? "Carregando..." : "—", name: "", value: "—", price: "—", isPositive: false, icon: TrendingDown },
-        { title: "Volume Total", ticker: "—", name: "", value: "—", price: "—", isPositive: true, icon: BarChart3 },
+        { title: "Maior Alta", ticker: isLoading ? "Carregando..." : "—", value: "—", price: "—", isPositive: true, icon: TrendingUp },
+        { title: "Maior Baixa", ticker: isLoading ? "Carregando..." : "—", value: "—", price: "—", isPositive: false, icon: TrendingDown },
+        { title: "Volume Total", ticker: "—", value: "—", price: "—", isPositive: true, icon: BarChart3 },
       ];
     }
 
@@ -33,7 +32,6 @@ export function KPICards() {
       {
         title: "Maior Alta",
         ticker: topGainer.symbol,
-        name: topGainer.name !== topGainer.symbol ? topGainer.name : '',
         value: `${topGainer.changePercent >= 0 ? '+' : ''}${topGainer.changePercent.toFixed(2)}%`,
         price: `$ ${topGainer.price.toFixed(2)}`,
         isPositive: topGainer.changePercent >= 0,
@@ -42,7 +40,6 @@ export function KPICards() {
       {
         title: "Maior Baixa",
         ticker: topLoser.symbol,
-        name: topLoser.name !== topLoser.symbol ? topLoser.name : '',
         value: `${topLoser.changePercent >= 0 ? '+' : ''}${topLoser.changePercent.toFixed(2)}%`,
         price: `$ ${topLoser.price.toFixed(2)}`,
         isPositive: topLoser.changePercent >= 0,
@@ -51,7 +48,6 @@ export function KPICards() {
       {
         title: "Volume Total",
         ticker: `${quotes.length} ações`,
-        name: "",
         value: `${(totalVolume / 1000000).toFixed(1)}M`,
         price: "Volume agregado",
         isPositive: true,
@@ -82,7 +78,6 @@ export function KPICards() {
               <div>
                 <p className="text-sm text-muted-foreground">{kpi.title}</p>
                 <span className="ticker-badge mt-1">{kpi.ticker}</span>
-                {kpi.name && <p className="text-xs text-muted-foreground truncate max-w-[140px]">{kpi.name}</p>}
               </div>
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-lg ${
