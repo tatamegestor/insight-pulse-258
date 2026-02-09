@@ -65,7 +65,9 @@ export function MainChart() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-xl font-semibold text-foreground">{symbol}</h3>
-            <span className="ticker-badge">{stockName}</span>
+            {stockName && stockName !== symbol && (
+              <span className="text-sm text-muted-foreground">{stockName}</span>
+            )}
             {quote && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <span className="relative flex h-2 w-2">
