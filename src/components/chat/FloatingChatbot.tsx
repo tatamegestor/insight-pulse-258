@@ -39,24 +39,28 @@ export function FloatingChatbot() {
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg",
+          "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg",
           "bg-primary hover:bg-primary/90 text-primary-foreground",
-          "transition-transform hover:scale-105",
+          "transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           isOpen && "rotate-90"
         )}
+        aria-label={isOpen ? "Fechar chat" : "Abrir chat com assistente de investimentos"}
+        aria-expanded={isOpen}
       >
         {isOpen ? (
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
         ) : (
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
         )}
       </Button>
 
       {/* Chat Panel */}
       {isOpen && (
         <div
+          role="dialog"
+          aria-label="Chat com assistente de investimentos"
           className={cn(
-            "fixed bottom-24 right-6 z-50 w-[340px] h-[420px]",
+            "fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[340px] max-w-[340px] h-[60vh] sm:h-[420px]",
             "flex flex-col",
             "glass-card overflow-hidden",
             "animate-scale-in"
@@ -78,9 +82,9 @@ export function FloatingChatbot() {
               size="icon"
               onClick={clearHistory}
               className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-              title="Limpar conversa"
+              aria-label="Limpar conversa"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
 

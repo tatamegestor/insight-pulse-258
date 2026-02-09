@@ -11,10 +11,10 @@ const benefits = [
 
 export function CTA() {
   return (
-    <section className="py-20 bg-sidebar text-sidebar-foreground">
+    <section className="py-12 sm:py-20 bg-sidebar text-sidebar-foreground" aria-labelledby="cta-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
+          <h2 id="cta-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6">
             Comece a investir de forma{" "}
             <span className="text-primary">inteligente</span> hoje
           </h2>
@@ -23,33 +23,33 @@ export function CTA() {
             tomar melhores decisões no mercado financeiro.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 mb-10">
+          <ul className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 list-none" aria-label="Benefícios">
             {benefits.map((benefit, index) => (
-              <div
+              <li
                 key={index}
                 className="flex items-center gap-2 text-sm text-sidebar-foreground/80"
               >
-                <Check className="h-4 w-4 text-primary" />
+                <Check className="h-4 w-4 text-primary" aria-hidden="true" />
                 {benefit}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/login?tab=register">
+            <Link to="/login?tab=register" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base"
+                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 text-base"
               >
                 Criar Conta Grátis
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
               </Button>
             </Link>
-            <Link to="/mercado">
+            <Link to="/mercado" className="w-full sm:w-auto">
               <Button
                 size="lg"
                 variant="outline"
-                className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent px-8 h-12 text-base"
+                className="w-full sm:w-auto border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent px-8 h-12 text-base"
               >
                 Explorar Mercados
               </Button>

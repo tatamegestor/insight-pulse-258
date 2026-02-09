@@ -48,10 +48,10 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-12 sm:py-20 bg-muted/30" aria-labelledby="features-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+          <h2 id="features-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">
             Tudo que você precisa para{" "}
             <span className="text-primary">investir melhor</span>
           </h2>
@@ -60,14 +60,15 @@ export function Features() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {features.map((feature, index) => (
             <Link
               key={index}
               to={feature.href}
-              className="group bg-card rounded-xl border border-border p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
+              className="group bg-card rounded-xl border border-border p-5 sm:p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none"
+              aria-label={`${feature.title}: ${feature.description}`}
             >
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors" aria-hidden="true">
                 <feature.icon className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">

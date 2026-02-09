@@ -34,22 +34,22 @@ function MarketTable({ data, isLoading, showMonthly = false }: { data: MarketQuo
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead>
+         <thead>
           <tr className="border-b border-border">
-            <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+            <th scope="col" className="text-left py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">
               Nome
             </th>
-            <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
+            <th scope="col" className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">
               Último
             </th>
-            <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
+            <th scope="col" className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden sm:table-cell">
               Variação (1D)
             </th>
-            <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
+            <th scope="col" className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground">
               Var. % (1D)
             </th>
             {showMonthly && (
-              <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">
+              <th scope="col" className="text-right py-3 px-2 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground hidden md:table-cell">
                 Var. % (Mensal)
               </th>
             )}
@@ -61,27 +61,27 @@ function MarketTable({ data, isLoading, showMonthly = false }: { data: MarketQuo
               key={item.symbol}
               className="border-b border-border/50 hover:bg-muted/50 transition-colors cursor-pointer"
             >
-              <td className="py-4 px-4">
+              <td className="py-3 sm:py-4 px-2 sm:px-4">
                 <div>
-                  <p className="font-medium text-foreground">{item.name}</p>
-                  <p className="text-sm text-muted-foreground">{item.symbol}</p>
+                  <p className="font-medium text-foreground text-sm sm:text-base">{item.name}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{item.symbol}</p>
                 </div>
               </td>
-              <td className="text-right py-4 px-4 font-mono font-medium text-foreground">
+              <td className="text-right py-3 sm:py-4 px-2 sm:px-4 font-mono font-medium text-foreground text-sm sm:text-base">
                 {item.currency === 'BRL' ? 'R$ ' : 'US$ '}
                 {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
               <td
-                className={`text-right py-4 px-4 font-mono ${
+                className={`text-right py-3 sm:py-4 px-2 sm:px-4 font-mono hidden sm:table-cell ${
                   item.change >= 0 ? "text-success" : "text-destructive"
                 }`}
               >
                 {item.change >= 0 ? "+" : ""}
                 {item.change.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
-              <td className="text-right py-4 px-4">
+              <td className="text-right py-3 sm:py-4 px-2 sm:px-4">
                 <span
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium ${
+                  className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm font-medium ${
                     item.changePercent >= 0
                       ? "bg-success/10 text-success"
                       : "bg-destructive/10 text-destructive"
@@ -97,9 +97,9 @@ function MarketTable({ data, isLoading, showMonthly = false }: { data: MarketQuo
                 </span>
               </td>
               {showMonthly && (
-                <td className="text-right py-4 px-4">
+                <td className="text-right py-3 sm:py-4 px-2 sm:px-4 hidden md:table-cell">
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium ${
+                    className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm font-medium ${
                       (item.changeMonthly ?? 0) >= 0
                         ? "bg-success/10 text-success"
                         : "bg-destructive/10 text-destructive"
@@ -127,11 +127,11 @@ export function MarketOverview() {
   const { brStocks, usStocks, isLoading } = useMarketOverview();
 
   return (
-    <section id="mercados" className="py-6 bg-background">
+    <section id="mercados" className="py-6 bg-background" aria-labelledby="mercados-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">Mercados</h2>
+            <h2 id="mercados-heading" className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Mercados</h2>
             <p className="text-muted-foreground">
               Acompanhe os principais índices e ativos em tempo real
             </p>

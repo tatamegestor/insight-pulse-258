@@ -49,6 +49,8 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
         "fixed left-0 top-0 z-40 h-screen flex flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
+      role="navigation"
+      aria-label="Menu lateral"
     >
       {/* Logo */}
       <Link to="/" className="flex h-16 items-center gap-3 border-b border-sidebar-border px-4 cursor-pointer">

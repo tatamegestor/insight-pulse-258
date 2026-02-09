@@ -13,11 +13,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <MarketTicker />
-      <Hero />
-      
-      <NewsSection />
-      <MarketOverview />
-      <CTA />
+      <main id="main-content">
+        <Hero />
+        <NewsSection />
+        <MarketOverview />
+        <CTA />
+      </main>
       <Footer />
       <FloatingChatbot />
     </div>
