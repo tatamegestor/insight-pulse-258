@@ -27,6 +27,7 @@ export function StockFormDialog({
   const [quantity, setQuantity] = useState('');
   const [avgPrice, setAvgPrice] = useState('');
   const [logo, setLogo] = useState('📈');
+  const [purchasedAt, setPurchasedAt] = useState(new Date().toISOString().split('T')[0]);
 
   const isEditing = !!stock;
 
@@ -37,12 +38,14 @@ export function StockFormDialog({
       setQuantity(stock.quantity.toString());
       setAvgPrice(stock.avg_price.toString());
       setLogo(stock.logo);
+      setPurchasedAt(stock.purchased_at || new Date().toISOString().split('T')[0]);
     } else {
       setSymbol('');
       setName('');
       setQuantity('');
       setAvgPrice('');
       setLogo('📈');
+      setPurchasedAt(new Date().toISOString().split('T')[0]);
     }
   }, [stock, open]);
 
@@ -54,6 +57,7 @@ export function StockFormDialog({
       quantity: parseInt(quantity, 10),
       avg_price: parseFloat(avgPrice),
       logo,
+      purchased_at: purchasedAt,
     });
   };
 
@@ -116,6 +120,17 @@ export function StockFormDialog({
                 required
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="purchasedAt">Data da Compra</Label>
+            <Input
+              id="purchasedAt"
+              type="date"
+              value={purchasedAt}
+              onChange={(e) => setPurchasedAt(e.target.value)}
+              required
+            />
           </div>
 
           <div className="space-y-2">
