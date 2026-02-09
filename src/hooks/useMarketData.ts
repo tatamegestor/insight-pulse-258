@@ -118,8 +118,9 @@ export function useDashboardKPIs() {
  * Hook para gráfico principal do dashboard
  */
 export function useMainChartData(symbol: string = 'AAPL') {
+  const market = detectMarket(symbol);
   const quote = useStockQuote(symbol);
-  const history = useStockHistory(symbol, 'US');
+  const history = useStockHistory(symbol, market);
 
   return {
     quote: quote.data,
