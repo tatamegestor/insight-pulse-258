@@ -64,8 +64,8 @@ export function MainChart() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-xl font-semibold text-foreground">{symbol}</h3>
-            <span className="ticker-badge">{stockName}</span>
+            <span className="ticker-badge">{symbol}</span>
+            <h3 className="text-xl font-semibold text-foreground">{stockName}</h3>
             {quote && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <span className="relative flex h-2 w-2">

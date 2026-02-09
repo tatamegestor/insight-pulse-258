@@ -22,7 +22,7 @@ function RankingItem({ symbol, name, change, position, isGainer = true }: Rankin
         </span>
         <div>
           <span className="ticker-badge text-xs">{symbol}</span>
-          <p className="text-xs text-muted-foreground truncate max-w-[120px]">{name}</p>
+          <p className="text-xs text-muted-foreground truncate max-w-[140px]">{name}</p>
         </div>
       </div>
       <div className={`flex items-center gap-1 font-mono text-sm font-medium ${

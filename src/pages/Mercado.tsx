@@ -176,7 +176,7 @@ export default function Mercado() {
                         <TableCell className="text-foreground font-medium">
                           <div className="flex items-center gap-1.5">
                             {stock.trend_emoji && <span>{stock.trend_emoji}</span>}
-                            {stock.short_name || stock.long_name || stock.symbol}
+                            {stock.long_name || stock.short_name || stock.symbol}
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono text-foreground">
