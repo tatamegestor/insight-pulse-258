@@ -50,8 +50,7 @@ export function MainChart() {
 
   // Preparar dados do gráfico
   const chartData = history
-    .slice(0, 30)
-    .reverse()
+    .slice(-30)
     .map(item => ({
       time: format(new Date(item.date), 'dd/MM'),
       price: item.close,
