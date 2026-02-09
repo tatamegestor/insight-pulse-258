@@ -103,8 +103,7 @@ export default function AcaoDetalhes() {
 
   // Preparar dados do gráfico
   const chartData = timeSeries
-    ?.slice(0, 30)
-    .reverse()
+    ?.slice(-30)
     .map(item => ({
       date: format(new Date(item.date), 'dd/MM'),
       price: item.close,
