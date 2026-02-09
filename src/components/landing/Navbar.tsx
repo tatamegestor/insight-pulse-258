@@ -1,10 +1,26 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, TrendingUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleDropdown = (name: string) => {
+    setDropdownOpen(dropdownOpen === name ? null : name);
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
@@ -21,20 +37,64 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8" ref={dropdownRef}>
             <div className="flex items-center gap-6">
               <Link to="/mercado" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Mercados
               </Link>
-              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Ferramentas
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Análises
-                <ChevronDown className="h-4 w-4" />
-              </button>
-              <Link to="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              
+              {/* Ferramentas Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => toggleDropdown("ferramentas")}
+                  className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Ferramentas
+                  <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen === "ferramentas" ? "rotate-180" : ""}`} />
+                </button>
+                {dropdownOpen === "ferramentas" && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg py-2 z-50">
+                    <Link to="/ferramentas" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Todas as Ferramentas
+                    </Link>
+                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Alertas de Preço
+                    </Link>
+                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Gestão de Carteira
+                    </Link>
+                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Chatbot IA
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Análises Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => toggleDropdown("analises")}
+                  className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Análises
+                  <ChevronDown className={`h-4 w-4 transition-transform ${dropdownOpen === "analises" ? "rotate-180" : ""}`} />
+                </button>
+                {dropdownOpen === "analises" && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg py-2 z-50">
+                    <Link to="/analises" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Todas as Análises
+                    </Link>
+                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Insight Diário IA
+                    </Link>
+                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                      Rankings de Ações
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Notícias
               </Link>
             </div>
@@ -67,25 +127,31 @@ export function Navbar() {
       {isOpen && (
         <div className="md:hidden bg-card border-b border-border">
           <div className="px-4 py-4 space-y-3">
-            <Link to="/mercado" className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <Link to="/mercado" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               Mercados
             </Link>
-            <button className="block w-full text-left py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <Link to="/ferramentas" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               Ferramentas
-            </button>
-            <button className="block w-full text-left py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            </Link>
+            <Link to="/analises" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               Análises
-            </button>
-            <Link to="#" className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            </Link>
+            <Link to="/blog" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               Notícias
             </Link>
+            <Link to="/sobre" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              Sobre
+            </Link>
+            <Link to="/contato" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              Contato
+            </Link>
             <div className="pt-4 space-y-2 border-t border-border">
-              <Link to="/login" className="block">
+              <Link to="/login" onClick={() => setIsOpen(false)} className="block">
                 <Button variant="outline" className="w-full">
                   Entrar
                 </Button>
               </Link>
-              <Link to="/login" className="block">
+              <Link to="/login" onClick={() => setIsOpen(false)} className="block">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                   Cadastre-se Grátis
                 </Button>
