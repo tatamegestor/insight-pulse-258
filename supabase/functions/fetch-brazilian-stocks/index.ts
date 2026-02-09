@@ -96,8 +96,8 @@ serve(async (req) => {
     }
 
     const symbolsParam = symbols.join(',');
-    // Request with 1mo range to get historical data for monthly variation calculation
-    let url = `https://brapi.dev/api/quote/${symbolsParam}?range=1mo&interval=1d`;
+    // Request with 3mo range to ensure at least 30 trading days of history
+    let url = `https://brapi.dev/api/quote/${symbolsParam}?range=3mo&interval=1d`;
     
     if (BRAPI_TOKEN) {
       url += `&token=${BRAPI_TOKEN}`;
