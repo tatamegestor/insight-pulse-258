@@ -97,6 +97,9 @@ export function Navbar() {
               <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Notícias
               </Link>
+              <Link to="/valores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                Valores
+              </Link>
             </div>
 
             <div className="flex items-center gap-3">
@@ -138,6 +141,9 @@ export function Navbar() {
             </Link>
             <Link to="/blog" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               Notícias
+            </Link>
+            <Link to="/valores" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+              Valores
             </Link>
             <Link to="/sobre" onClick={() => setIsOpen(false)} className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               Sobre
