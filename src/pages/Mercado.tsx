@@ -135,18 +135,17 @@ export default function Mercado() {
               <TableHeader>
                 <TableRow className="border-border hover:bg-transparent">
                   <TableHead className="text-muted-foreground">Ação</TableHead>
-                  <TableHead className="text-muted-foreground">Nome</TableHead>
                   <TableHead className="text-muted-foreground text-right">Preço</TableHead>
                   <TableHead className="text-muted-foreground text-right">Var. Diária</TableHead>
                   <TableHead className="text-muted-foreground text-right">Var. Mensal</TableHead>
                   <TableHead className="text-muted-foreground">Insight IA</TableHead>
-                  <TableHead className="text-muted-foreground text-right">Ação</TableHead>
+                  <TableHead className="text-muted-foreground text-right"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredStocks.length === 0 && !isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                       {searchTerm ? "Nenhuma ação encontrada para esta busca." : "Nenhuma ação disponível."}
                     </TableCell>
                   </TableRow>
@@ -170,13 +169,15 @@ export default function Mercado() {
                             ) : (
                               <span className="text-xl">📈</span>
                             )}
-                            <span className="ticker-badge">{stock.symbol}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-foreground font-medium">
-                          <div className="flex items-center gap-1.5">
-                            {stock.trend_emoji && <span>{stock.trend_emoji}</span>}
-                            {stock.short_name || stock.long_name || stock.symbol}
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="ticker-badge">{stock.symbol}</span>
+                                {stock.trend_emoji && <span>{stock.trend_emoji}</span>}
+                              </div>
+                              {(stock.short_name || stock.long_name) && (stock.short_name || stock.long_name) !== stock.symbol && (
+                                <p className="text-xs text-muted-foreground truncate max-w-[180px]">{stock.short_name || stock.long_name}</p>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-mono text-foreground">
@@ -250,12 +251,11 @@ export default function Mercado() {
                   <TableHeader>
                     <TableRow className="border-border hover:bg-transparent">
                       <TableHead className="text-muted-foreground">Ação</TableHead>
-                      <TableHead className="text-muted-foreground">Nome</TableHead>
                       <TableHead className="text-muted-foreground text-right">Preço</TableHead>
                       <TableHead className="text-muted-foreground text-right">Var. Diária</TableHead>
                       <TableHead className="text-muted-foreground text-right">Var. Mensal</TableHead>
                       <TableHead className="text-muted-foreground text-right">Volume</TableHead>
-                      <TableHead className="text-muted-foreground text-right">Ação</TableHead>
+                      <TableHead className="text-muted-foreground text-right"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -268,11 +268,13 @@ export default function Mercado() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <span className="text-xl">📈</span>
-                            <span className="ticker-badge">{stock.symbol}</span>
+                            <div>
+                              <span className="ticker-badge">{stock.symbol}</span>
+                              {stock.name && stock.name !== stock.symbol && (
+                                <p className="text-xs text-muted-foreground truncate max-w-[180px]">{stock.name}</p>
+                              )}
+                            </div>
                           </div>
-                        </TableCell>
-                        <TableCell className="text-foreground font-medium">
-                          {stock.name}
                         </TableCell>
                         <TableCell className="text-right font-mono text-foreground">
                           {`R$ ${Number(stock.price).toFixed(2)}`}
