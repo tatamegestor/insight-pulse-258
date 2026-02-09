@@ -36,11 +36,11 @@ export function Hero() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/mercado">
+              <a href="#mercados">
                 <Button size="lg" variant="outline" className="px-8 h-12 text-base">
-                  Ver Mercados
+                  Explorar Mercados
                 </Button>
-              </Link>
+              </a>
             </div>
 
             {/* Trust badges */}
