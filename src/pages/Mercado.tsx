@@ -31,13 +31,13 @@ export default function Mercado() {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useStockPrices();
-  const { data: searchResults, isLoading: searchLoading } = useSearchStocks(searchTerm);
+  const { data: searchResults, enrichedData, isLoading: searchLoading, isLoadingDetails } = useSearchStocks(searchTerm);
 
   // Symbols already monitored in DB
   const monitoredSymbols = new Set((data?.all || []).map(s => s.symbol.toUpperCase()));
 
-  // Filter search results to show only non-monitored stocks
-  const apiResults = (searchResults || []).filter(
+  // Filter enriched results to show only non-monitored stocks
+  const apiResults = enrichedData.filter(
     (r) => !monitoredSymbols.has(r.symbol.toUpperCase())
   );
 
@@ -234,9 +234,9 @@ export default function Mercado() {
               <Search className="h-4 w-4 text-primary" />
               <h3 className="text-sm font-semibold text-foreground">Resultados da busca na B3</h3>
               <Badge variant="secondary" className="text-xs">API</Badge>
-              {searchLoading && <Loader2 className="h-3 w-3 animate-spin text-primary ml-auto" />}
+              {(searchLoading || isLoadingDetails) && <Loader2 className="h-3 w-3 animate-spin text-primary ml-auto" />}
             </div>
-            {searchLoading ? (
+            {(searchLoading || isLoadingDetails) ? (
               <div className="p-6 text-center text-muted-foreground text-sm">
                 Buscando ações...
               </div>
@@ -245,57 +245,66 @@ export default function Mercado() {
                 Nenhuma ação adicional encontrada para "{searchTerm}".
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border hover:bg-transparent">
-                    <TableHead className="text-muted-foreground">Ticker</TableHead>
-                    <TableHead className="text-muted-foreground">Nome</TableHead>
-                    <TableHead className="text-muted-foreground text-right">Preço</TableHead>
-                    <TableHead className="text-muted-foreground text-right">Variação</TableHead>
-                    <TableHead className="text-muted-foreground">Setor</TableHead>
-                    <TableHead className="text-muted-foreground text-right">Ação</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {apiResults.map((stock) => (
-                    <TableRow
-                      key={stock.symbol}
-                      className="table-row-interactive border-border cursor-pointer"
-                      onClick={() => navigate(`/acao/${stock.symbol}`)}
-                    >
-                      <TableCell>
-                        <span className="ticker-badge">{stock.symbol}</span>
-                      </TableCell>
-                      <TableCell className="text-foreground font-medium">
-                        {stock.name}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-foreground">
-                        {stock.close ? `R$ ${Number(stock.close).toFixed(2)}` : '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <VariationBadge value={stock.change ? Number(stock.change).toFixed(2) : null} />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-xs">
-                        {stock.sector || '—'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-primary hover:text-primary hover:bg-primary/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/acao/${stock.symbol}`);
-                          }}
-                        >
-                          Ver Detalhes
-                          <ExternalLink className="h-3 w-3 ml-1" />
-                        </Button>
-                      </TableCell>
+              <TooltipProvider>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-muted-foreground">Ação</TableHead>
+                      <TableHead className="text-muted-foreground">Nome</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Preço</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Var. Diária</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Var. Mensal</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Volume</TableHead>
+                      <TableHead className="text-muted-foreground text-right">Ação</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {apiResults.map((stock) => (
+                      <TableRow
+                        key={stock.symbol}
+                        className="table-row-interactive border-border cursor-pointer"
+                        onClick={() => navigate(`/acao/${stock.symbol}`)}
+                      >
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">📈</span>
+                            <span className="ticker-badge">{stock.symbol}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-foreground font-medium">
+                          {stock.name}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-foreground">
+                          {`R$ ${Number(stock.price).toFixed(2)}`}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <VariationBadge value={formatVariation(stock.changePercent)} />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <VariationBadge value={formatVariation(stock.changeMonthly ?? null)} />
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-muted-foreground text-xs">
+                          {stock.volume ? `${(stock.volume / 1000000).toFixed(1)}M` : '—'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/acao/${stock.symbol}`);
+                            }}
+                          >
+                            Ver Detalhes
+                            <ExternalLink className="h-3 w-3 ml-1" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TooltipProvider>
             )}
           </div>
         )}
