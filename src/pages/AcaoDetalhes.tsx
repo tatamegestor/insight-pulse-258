@@ -135,11 +135,22 @@ export default function AcaoDetalhes() {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 animate-fade-in">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              {displayData.logo_url ? (
-                <img src={displayData.logo_url} alt={symbol} className="h-10 w-10 rounded" />
-              ) : (
-                <span className="text-3xl">📈</span>
-              )}
+              {displayData.logo_url && displayData.logo_url.startsWith('http') ? (
+                <img 
+                  src={displayData.logo_url} 
+                  alt={symbol} 
+                  className="h-10 w-10 rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ) : null}
+              <div 
+                className="h-10 w-10 rounded bg-primary/20 flex items-center justify-center font-bold text-primary"
+                style={displayData.logo_url && displayData.logo_url.startsWith('http') ? { display: 'none' } : {}}
+              >
+                {symbol.charAt(0)}
+              </div>
               <h1 className="text-4xl font-bold text-foreground">{symbol}</h1>
               {displayData.trend_emoji && <span className="text-2xl">{displayData.trend_emoji}</span>}
               <span className="px-2 py-1 text-xs rounded bg-primary/10 text-primary font-medium">

@@ -160,19 +160,22 @@ export default function Mercado() {
                       >
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {stock.logo_url ? (
+                            {stock.logo_url && stock.logo_url.startsWith('http') ? (
                               <img
                                 src={stock.logo_url}
                                 alt={stock.symbol}
-                                className="h-6 w-6 rounded object-cover bg-muted"
+                                className="h-6 w-6 rounded object-cover"
                                 onError={(e) => {
-                                  const img = e.target as HTMLImageElement;
-                                  img.style.display = 'none';
-                                  img.nextElementSibling?.removeAttribute('style');
+                                  (e.target as HTMLImageElement).style.display = 'none';
                                 }}
                               />
                             ) : null}
-                            <span className="text-xl" style={stock.logo_url ? { display: 'none' } : {}}>📈</span>
+                            <div 
+                              className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-xs font-bold text-primary"
+                              style={stock.logo_url && stock.logo_url.startsWith('http') ? { display: 'none' } : {}}
+                            >
+                              {stock.symbol.charAt(0)}
+                            </div>
                             <span className="ticker-badge">{stock.symbol}</span>
                           </div>
                         </TableCell>
