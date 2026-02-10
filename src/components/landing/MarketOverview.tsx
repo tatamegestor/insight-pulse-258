@@ -72,12 +72,14 @@ function MarketTable({ data, isLoading, showMonthly = false }: { data: MarketQuo
                 {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
               <td
-                className={`text-right py-3 sm:py-4 px-2 sm:px-4 font-mono hidden sm:table-cell ${
+                className={`text-right py-3 sm:py-4 px-2 sm:px-4 font-mono hidden sm:table-cell text-xs sm:text-sm ${
                   item.change >= 0 ? "text-success" : "text-destructive"
                 }`}
               >
                 {item.change >= 0 ? "+" : ""}
-                {item.change.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {item.currency === 'BRL' ? 'R$ ' : ''}
+                {Math.abs(item.change).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {item.currency === 'USD' ? ' US$' : ''}
               </td>
               <td className="text-right py-3 sm:py-4 px-2 sm:px-4">
                 <span

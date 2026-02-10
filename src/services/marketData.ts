@@ -95,10 +95,65 @@ export async function getBrazilianStocks(symbols: string[]): Promise<MarketQuote
     }
 
     const quotes = data?.quotes || [];
-    setCachedQuotes(cacheKey, quotes);
-    return quotes;
+    if (quotes.length > 0) {
+      setCachedQuotes(cacheKey, quotes);
+      return quotes;
+    }
   } catch (error) {
-    console.error('Failed to fetch Brazilian stocks:', error);
+    console.error('Failed to fetch Brazilian stocks from Edge Function:', error);
+  }
+
+  // Fallback: read from stock_prices table in database
+  try {
+    console.log('Falling back to stock_prices table for BR stocks');
+    const { data, error } = await supabase
+      .from('stock_prices')
+      .select('*')
+      .in('symbol', symbols)
+      .eq('currency', 'BRL')
+      .order('market_time', { ascending: false });
+
+    if (error) throw error;
+
+    // Deduplicate: keep only the most recent entry per symbol
+    const seen = new Set<string>();
+    const unique = (data || []).filter(row => {
+      if (seen.has(row.symbol)) return false;
+      seen.add(row.symbol);
+      return true;
+    });
+
+    const quotes: MarketQuote[] = unique.map(row => {
+      const changePercent = Number(row.variation_daily || row.brapi_change_percent || 0);
+      const currentPrice = Number(row.current_price);
+      // Calculate absolute change from percentage
+      const change = currentPrice > 0 ? (changePercent / 100) * currentPrice : 0;
+      
+      return {
+        symbol: row.symbol,
+        name: row.long_name || row.short_name || row.symbol,
+        price: currentPrice,
+        change: change,
+        changePercent: changePercent,
+        changeMonthly: Number(row.variation_monthly || 0),
+        volume: Number(row.volume || 0),
+        high: Number(row.high_price || row.current_price),
+        low: Number(row.low_price || row.current_price),
+        open: Number(row.open_price || row.current_price),
+        previousClose: Number(row.previous_close || row.current_price),
+        market: 'BR',
+        currency: 'BRL',
+        updatedAt: row.market_time || new Date().toISOString(),
+      };
+    });
+
+    if (quotes.length > 0) {
+      setCachedQuotes(cacheKey, quotes);
+      return quotes;
+    }
+    return [];
+  } catch (dbError) {
+    console.error('DB fallback also failed:', dbError);
     return [];
   }
 }
@@ -172,22 +227,29 @@ export async function getUSStocks(symbols: string[]): Promise<MarketQuote[]> {
       return true;
     });
 
-    const quotes: MarketQuote[] = unique.map(row => ({
-      symbol: row.symbol,
-      name: row.short_name || row.long_name || row.symbol,
-      price: Number(row.current_price),
-      change: Number(row.brapi_change || 0),
-      changePercent: Number(row.variation_daily || row.brapi_change_percent || 0),
-      changeMonthly: Number(row.variation_monthly || 0),
-      volume: Number(row.volume || 0),
-      high: Number(row.high_price || row.current_price),
-      low: Number(row.low_price || row.current_price),
-      open: Number(row.open_price || row.current_price),
-      previousClose: Number(row.previous_close || row.current_price),
-      market: 'US',
-      currency: (row.currency as 'USD' | 'BRL') || 'USD',
-      updatedAt: row.market_time || new Date().toISOString(),
-    }));
+    const quotes: MarketQuote[] = unique.map(row => {
+      const changePercent = Number(row.variation_daily || row.brapi_change_percent || 0);
+      const currentPrice = Number(row.current_price);
+      // Calculate absolute change from percentage
+      const change = currentPrice > 0 ? (changePercent / 100) * currentPrice : 0;
+      
+      return {
+        symbol: row.symbol,
+        name: row.long_name || row.short_name || row.symbol,
+        price: currentPrice,
+        change: change,
+        changePercent: changePercent,
+        changeMonthly: Number(row.variation_monthly || 0),
+        volume: Number(row.volume || 0),
+        high: Number(row.high_price || row.current_price),
+        low: Number(row.low_price || row.current_price),
+        open: Number(row.open_price || row.current_price),
+        previousClose: Number(row.previous_close || row.current_price),
+        market: 'US',
+        currency: (row.currency as 'USD' | 'BRL') || 'USD',
+        updatedAt: row.market_time || new Date().toISOString(),
+      };
+    });
 
     if (quotes.length > 0) {
       setCachedQuotes(cacheKey, quotes);
