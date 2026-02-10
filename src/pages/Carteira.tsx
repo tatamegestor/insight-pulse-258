@@ -14,7 +14,12 @@ export default function Carteira() {
   const { portfolio, isLoading, addStock, updateStock, deleteStock } = usePortfolio();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingStock, setEditingStock] = useState<PortfolioItem | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+
+  const handleImageError = (symbol: string) => {
+    setBrokenImages(prev => new Set(prev).add(symbol));
+  };
 
   // Fetch current prices and logos for all stocks in portfolio
   const { data: currentPrices } = useQuery({
@@ -275,8 +280,13 @@ export default function Carteira() {
                       >
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            {priceInfo?.logoUrl ? (
-                              <img src={priceInfo.logoUrl} alt={stock.symbol} className="w-8 h-8 rounded-full object-contain bg-muted" />
+                            {priceInfo?.logoUrl && !brokenImages.has(stock.symbol) ? (
+                              <img 
+                                src={priceInfo.logoUrl} 
+                                alt={stock.symbol} 
+                                className="w-8 h-8 rounded-full object-contain bg-muted"
+                                onError={() => handleImageError(stock.symbol)}
+                              />
                             ) : (
                               <span className="text-xl w-8 h-8 flex items-center justify-center">{stock.logo || '📈'}</span>
                             )}
