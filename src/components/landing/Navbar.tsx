@@ -98,7 +98,7 @@ export function Navbar() {
               </div>
 
               <Link to="/blog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                Notícias
+                Artigos
               </Link>
               <Link to="/valores" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Valores
