@@ -273,6 +273,7 @@ export type Database = {
           trend: string | null
           trend_emoji: string | null
           variation_daily: number | null
+          variation_monthly: number | null
           variation_from_close: number | null
           volatility_intraday: number | null
           volatility_level: string | null
@@ -308,6 +309,7 @@ export type Database = {
           trend?: string | null
           trend_emoji?: string | null
           variation_daily?: number | null
+          variation_monthly?: number | null
           variation_from_close?: number | null
           volatility_intraday?: number | null
           volatility_level?: string | null
@@ -343,6 +345,7 @@ export type Database = {
           trend?: string | null
           trend_emoji?: string | null
           variation_daily?: number | null
+          variation_monthly?: number | null
           variation_from_close?: number | null
           volatility_intraday?: number | null
           volatility_level?: string | null

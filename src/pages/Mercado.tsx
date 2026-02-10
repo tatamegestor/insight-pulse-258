@@ -164,12 +164,15 @@ export default function Mercado() {
                               <img
                                 src={stock.logo_url}
                                 alt={stock.symbol}
-                                className="h-6 w-6 rounded"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                className="h-6 w-6 rounded object-cover bg-muted"
+                                onError={(e) => {
+                                  const img = e.target as HTMLImageElement;
+                                  img.style.display = 'none';
+                                  img.nextElementSibling?.removeAttribute('style');
+                                }}
                               />
-                            ) : (
-                              <span className="text-xl">📈</span>
-                            )}
+                            ) : null}
+                            <span className="text-xl" style={stock.logo_url ? { display: 'none' } : {}}>📈</span>
                             <span className="ticker-badge">{stock.symbol}</span>
                           </div>
                         </TableCell>
