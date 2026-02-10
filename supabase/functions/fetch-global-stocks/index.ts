@@ -21,7 +21,13 @@ async function fetchFromN8n(): Promise<any[] | null> {
       console.warn("n8n returned empty response");
       return null;
     }
-    const data = JSON.parse(text);
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.warn("n8n response is not valid JSON:", text.substring(0, 200));
+      return null;
+    }
     let rawItems: any[] = [];
     const items = Array.isArray(data) ? data : [data];
     for (const item of items) {

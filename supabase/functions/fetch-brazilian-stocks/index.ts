@@ -106,10 +106,29 @@ serve(async (req) => {
     console.log(`Fetching from brapi.dev (with history): ${symbols.join(', ')}`);
     
     const response = await fetch(url);
-    const data = await response.json();
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Brapi HTTP ${response.status}:`, errorText.substring(0, 200));
+      return new Response(
+        JSON.stringify({ error: `Brapi returned ${response.status}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    if (!response.ok || data.error) {
-      console.error('Brapi error:', data);
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseErr) {
+      console.error('Brapi response is not valid JSON:', parseErr);
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON from brapi.dev' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (data.error) {
+      console.error('Brapi error field:', data.error);
       return new Response(
         JSON.stringify({ error: data.message || 'Failed to fetch from brapi.dev' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
