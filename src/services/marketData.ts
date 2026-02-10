@@ -178,7 +178,7 @@ export async function getUSStocks(symbols: string[]): Promise<MarketQuote[]> {
       price: Number(row.current_price),
       change: Number(row.brapi_change || 0),
       changePercent: Number(row.variation_daily || row.brapi_change_percent || 0),
-      changeMonthly: 0,
+      changeMonthly: Number(row.variation_monthly || 0),
       volume: Number(row.volume || 0),
       high: Number(row.high_price || row.current_price),
       low: Number(row.low_price || row.current_price),
