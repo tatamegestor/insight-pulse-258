@@ -186,7 +186,7 @@ export default function Mercado() {
                           <VariationBadge value={formatVariation(stock.variation_daily ?? stock.brapi_change_percent ?? 0)} />
                         </TableCell>
                         <TableCell className="text-right">
-                          <VariationBadge value={formatVariation(stock.brapi_change_percent)} />
+                          <VariationBadge value={formatVariation(stock.variation_monthly)} />
                         </TableCell>
                         <TableCell className="max-w-[200px]">
                           {stock.auto_insight ? (

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.stock_prices (
   previous_close NUMERIC,
   volume BIGINT,
   variation_daily NUMERIC,
+  variation_monthly NUMERIC,
   volatility_intraday NUMERIC,
   fifty_two_week_high NUMERIC,
   fifty_two_week_low NUMERIC,
