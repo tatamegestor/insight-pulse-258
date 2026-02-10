@@ -59,7 +59,7 @@ export function AppSidebar({ onLogout }: AppSidebarProps) {
         </div>
         {!collapsed && (
           <span className="text-lg font-bold tracking-tight text-sidebar-foreground">
-            Invest<span className="text-primary">IA</span>
+            Invest<span className="text-primary"> AI</span>
           </span>
         )}
       </Link>
