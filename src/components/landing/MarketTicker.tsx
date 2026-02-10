@@ -42,25 +42,34 @@ export function MarketTicker() {
     );
   }
 
+  // Duplicar os tickers 3 vezes para criar um loop contínuo sem espaços
+  const repeatedTickers = [...tickers, ...tickers, ...tickers];
+  const animationDuration = tickers.length * 3; // Ajustar duração baseado no número de itens
+
   return (
     <div className="bg-sidebar text-sidebar-foreground overflow-hidden py-2 sm:py-3" role="marquee" aria-label="Cotações do mercado em tempo real">
-      <div className="flex animate-[scroll_30s_linear_infinite] whitespace-nowrap hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]">
-        {[...tickers, ...tickers].map((ticker, index) => (
+      <div 
+        className="flex whitespace-nowrap hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
+        style={{
+          animation: `scroll ${animationDuration}s linear infinite`,
+        }}
+      >
+        {repeatedTickers.map((ticker, index) => (
           <div
             key={index}
-            className="flex items-center gap-3 px-6 border-r border-sidebar-border"
+            className="flex items-center gap-3 px-6 border-r border-sidebar-border flex-shrink-0"
           >
-            <span className="font-semibold text-sm">{ticker.symbol}</span>
-            <span className="font-mono text-sm">{ticker.value}</span>
+            <span className="font-semibold text-sm whitespace-nowrap">{ticker.symbol}</span>
+            <span className="font-mono text-sm whitespace-nowrap">{ticker.value}</span>
             <span
-              className={`flex items-center gap-1 text-sm font-medium ${
+              className={`flex items-center gap-1 text-sm font-medium whitespace-nowrap ${
                 ticker.positive ? "text-success" : "text-destructive"
               }`}
             >
               {ticker.positive ? (
-                <TrendingUp className="h-3 w-3" />
+                <TrendingUp className="h-3 w-3 flex-shrink-0" />
               ) : (
-                <TrendingDown className="h-3 w-3" />
+                <TrendingDown className="h-3 w-3 flex-shrink-0" />
               )}
               {ticker.change}
             </span>
@@ -71,7 +80,7 @@ export function MarketTicker() {
       <style>{`
         @keyframes scroll {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.333%); }
         }
       `}</style>
     </div>

@@ -5,6 +5,7 @@ import {
   getStockQuote,
   getStockHistory,
   getMultipleQuotes,
+  getTopPerformers,
   MarketQuote,
   TimeSeriesData,
   detectMarket,
@@ -62,14 +63,12 @@ export function useStockHistory(symbol: string, market?: 'BR' | 'US') {
 
 /**
  * Hook para o ticker da navbar
- * Busca PETR4, VALE3, ITUB4, MGLU3, USD, EUR
+ * Busca os 10 ativos mais valorizados do mercado
  */
 export function useMarketTicker() {
-  const brSymbols = ['PETR4', 'VALE3', 'ITUB4', 'MGLU3', 'USDBRL', 'EURBRL'];
-  
   return useQuery<MarketQuote[]>({
     queryKey: ['marketTicker'],
-    queryFn: () => getBrazilianStocks(brSymbols),
+    queryFn: () => getTopPerformers(10),
     staleTime: STALE_TIME,
     refetchInterval: 5 * 60 * 1000, // Atualizar a cada 5 minutos
   });

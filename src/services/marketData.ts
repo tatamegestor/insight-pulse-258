@@ -409,6 +409,74 @@ export async function getMultipleQuotes(
 }
 
 /**
+ * Busca os 10 ativos mais valorizados (top performers) do mercado
+ */
+export async function getTopPerformers(limit: number = 10): Promise<MarketQuote[]> {
+  const cacheKey = `topPerformers:${limit}`;
+  const cached = getCachedQuotes(cacheKey);
+  if (cached) {
+    console.log('Local cache hit for top performers');
+    return cached;
+  }
+
+  try {
+    // Buscar todos os ativos do banco de dados
+    const { data, error } = await supabase
+      .from('stock_prices')
+      .select('*')
+      .order('variation_daily', { ascending: false })
+      .limit(limit * 2); // Buscar mais para depois filtrar duplicados
+
+    if (error) throw error;
+
+    // Deduplicate: keep only the most recent entry per symbol
+    const seen = new Set<string>();
+    const unique = (data || []).filter(row => {
+      if (seen.has(row.symbol)) return false;
+      seen.add(row.symbol);
+      return true;
+    });
+
+    // Converter para MarketQuote e ordenar por variação
+    const quotes: MarketQuote[] = unique
+      .slice(0, limit)
+      .map(row => {
+        const changePercent = Number(row.variation_daily || row.brapi_change_percent || 0);
+        const currentPrice = Number(row.current_price);
+        // Calculate absolute change from percentage
+        const change = currentPrice > 0 ? (changePercent / 100) * currentPrice : 0;
+        
+        return {
+          symbol: row.symbol,
+          name: row.long_name || row.short_name || row.symbol,
+          price: currentPrice,
+          change: change,
+          changePercent: changePercent,
+          changeMonthly: Number(row.variation_monthly || 0),
+          volume: Number(row.volume || 0),
+          high: Number(row.high_price || row.current_price),
+          low: Number(row.low_price || row.current_price),
+          open: Number(row.open_price || row.current_price),
+          previousClose: Number(row.previous_close || row.current_price),
+          market: (row.currency === 'USD' ? 'US' : 'BR') as 'BR' | 'US',
+          currency: (row.currency as 'USD' | 'BRL') || 'BRL',
+          updatedAt: row.market_time || new Date().toISOString(),
+        };
+      })
+      .sort((a, b) => b.changePercent - a.changePercent)
+      .slice(0, limit);
+
+    if (quotes.length > 0) {
+      setCachedQuotes(cacheKey, quotes);
+    }
+    return quotes;
+  } catch (error) {
+    console.error('Failed to fetch top performers:', error);
+    return [];
+  }
+}
+
+/**
  * Limpa todos os caches locais
  */
 export function clearMarketCache(): void {
