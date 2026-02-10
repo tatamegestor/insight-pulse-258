@@ -1,4 +1,31 @@
-project_id = "zwlvmzsfcvomjckvvknn"
+project_id = "runhjeuvxkxkmknogncz"
 
 [functions.get-profile]
+verify_jwt = false
+
+[functions.chat-webhook]
+verify_jwt = false
+
+[functions.fetch-news]
+verify_jwt = false
+
+[functions.fetch-brazilian-stocks]
+verify_jwt = false
+
+[functions.fetch-us-stocks]
+verify_jwt = false
+
+[functions.fetch-global-stocks]
+verify_jwt = false
+
+[functions.search-stocks]
+verify_jwt = false
+
+[functions.save-daily-insight]
+verify_jwt = false
+
+[functions.sync-market-data]
+verify_jwt = false
+
+[functions.check-price-alerts]
 verify_jwt = false
