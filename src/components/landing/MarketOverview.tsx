@@ -76,7 +76,7 @@ function MarketTable({ data, isLoading, showMonthly = false }: { data: MarketQuo
                   item.change >= 0 ? "text-success" : "text-destructive"
                 }`}
               >
-                {item.change >= 0 ? "+" : ""}
+                {item.change >= 0 ? "+" : "-"}
                 {item.currency === 'BRL' ? 'R$ ' : ''}
                 {Math.abs(item.change).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 {item.currency === 'USD' ? ' US$' : ''}
@@ -169,7 +169,7 @@ export function MarketOverview() {
               <MarketTable data={brStocks.data} isLoading={brStocks.isLoading} showMonthly />
             </TabsContent>
             <TabsContent value="acoes-us" className="m-0">
-              <MarketTable data={usStocks.data} isLoading={usStocks.isLoading} showMonthly />
+              <MarketTable data={usStocks.data} isLoading={usStocks.isLoading} />
             </TabsContent>
           </Tabs>
         </div>
