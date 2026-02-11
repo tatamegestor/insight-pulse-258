@@ -1,5 +1,6 @@
 import { TrendingUp, TrendingDown, Zap, Loader2 } from "lucide-react";
-import { useDashboardKPIs, useMonthlyTopPerformer } from "@/hooks/useMarketData";
+import { useStockRankings } from "@/hooks/useRankings";
+import { useMonthlyTopPerformer } from "@/hooks/useMarketData";
 
 interface KPIData {
   title: string;
@@ -11,15 +12,16 @@ interface KPIData {
 }
 
 export function KPICards() {
-  const { data: quotes, isLoading } = useDashboardKPIs();
+  const { data: rankings = [], isLoading } = useStockRankings(undefined, 50);
   const { data: monthlyData, isLoading: monthlyLoading, error: monthlyError } = useMonthlyTopPerformer();
 
   const calculateTopGainerAndLoser = (): { gainer: KPIData; loser: KPIData } | null => {
-    if (!quotes || quotes.length === 0) {
+    if (!rankings || rankings.length === 0) {
       return null;
     }
 
-    const sorted = [...quotes].sort((a, b) => b.changePercent - a.changePercent);
+    // Ordena por daily_change para encontrar maior alta e maior baixa
+    const sorted = [...rankings].sort((a, b) => b.daily_change - a.daily_change);
     const topGainer = sorted[0];
     const topLoser = sorted[sorted.length - 1];
 
@@ -27,17 +29,17 @@ export function KPICards() {
       gainer: {
         title: "Maior Alta",
         ticker: topGainer.symbol,
-        value: `${topGainer.changePercent >= 0 ? '+' : ''}${topGainer.changePercent.toFixed(2)}%`,
-        price: `$ ${topGainer.price.toFixed(2)}`,
-        isPositive: topGainer.changePercent >= 0,
+        value: `${topGainer.daily_change >= 0 ? '+' : ''}${topGainer.daily_change.toFixed(2)}%`,
+        price: topGainer.name,
+        isPositive: topGainer.daily_change >= 0,
         icon: TrendingUp,
       },
       loser: {
         title: "Maior Baixa",
         ticker: topLoser.symbol,
-        value: `${topLoser.changePercent >= 0 ? '+' : ''}${topLoser.changePercent.toFixed(2)}%`,
-        price: `$ ${topLoser.price.toFixed(2)}`,
-        isPositive: topLoser.changePercent >= 0,
+        value: `${topLoser.daily_change >= 0 ? '+' : ''}${topLoser.daily_change.toFixed(2)}%`,
+        price: topLoser.name,
+        isPositive: topLoser.daily_change >= 0,
         icon: TrendingDown,
       },
     };
@@ -73,7 +75,7 @@ export function KPICards() {
       title: "Maior Var. Mensal",
       ticker: monthlyTopPerformer.symbol,
       value: `${isPositive ? '+' : ''}${monthlyTopPerformer.monthly_change.toFixed(2)}%`,
-      price: `${monthlyTopPerformer.currency} ${monthlyTopPerformer.price.toFixed(2)}`,
+      price: `R$ ${monthlyTopPerformer.price.toFixed(2)}`,
       isPositive,
       icon: Zap,
     };
