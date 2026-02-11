@@ -10,30 +10,35 @@ const analysisTypes = [
     title: "Insight Diário de IA",
     description: "Todos os dias nossa IA analisa o mercado e gera um resumo com sentimento (otimista, neutro ou pessimista) sobre o panorama geral.",
     available: true,
+    href: "/recursos/insights",
   },
   {
     icon: Bot,
     title: "Análise por Ação",
     description: "Cada ativo monitorado recebe um insight automático baseado em variação diária, posição no range de 52 semanas e volatilidade.",
     available: true,
+    href: "/mercado",
   },
   {
     icon: BarChart3,
     title: "Tendências de Mercado",
     description: "Identifique tendências de alta, baixa ou estabilidade com base em indicadores calculados automaticamente.",
     available: true,
+    href: "/mercado",
   },
   {
     icon: PieChart,
     title: "Análise de Carteira",
     description: "Visualize a composição da sua carteira, distribuição de risco e performance comparada ao mercado.",
     available: true,
+    href: "/recursos/carteira",
   },
   {
     icon: TrendingUp,
     title: "Ranking Inteligente",
     description: "Rankings automáticos das maiores altas e baixas, atualizados continuamente via automação.",
     available: true,
+    href: "/recursos/rankings",
   },
 ];
 
@@ -70,7 +75,7 @@ export default function Analises() {
                 </div>
                 <p className="text-muted-foreground">{analysis.description}</p>
               </div>
-              <Link to="/login" className="shrink-0">
+              <Link to={analysis.href || "/login"} className="shrink-0">
                 <Button variant="outline" size="sm">
                   Acessar
                   <ArrowRight className="h-4 w-4 ml-1" />

@@ -10,7 +10,7 @@ const tools = [
     title: "Chatbot com IA",
     description: "Converse com nossa inteligência artificial sobre qualquer ação ou estratégia de investimento. Receba análises personalizadas em tempo real.",
     cta: "Experimentar",
-    href: "/login",
+    href: "/recursos/chatbot",
     badge: "IA",
   },
   {
@@ -26,7 +26,7 @@ const tools = [
     title: "Alertas de Preço",
     description: "Configure alertas personalizados para ser notificado quando uma ação atingir o preço desejado. Nunca perca uma oportunidade.",
     cta: "Configurar Alertas",
-    href: "/login",
+    href: "/recursos/alertas",
     badge: "Tempo Real",
   },
   {
@@ -34,7 +34,7 @@ const tools = [
     title: "Gestão de Carteira",
     description: "Acompanhe todos os seus investimentos em um painel consolidado. Veja performance, variações e distribuição de ativos.",
     cta: "Acessar Carteira",
-    href: "/login",
+    href: "/recursos/carteira",
     badge: "Dashboard",
   },
   {
@@ -42,7 +42,7 @@ const tools = [
     title: "Ranking de Ações",
     description: "Descubra as ações com maiores altas e baixas do dia. Rankings atualizados automaticamente com dados do mercado.",
     cta: "Ver Rankings",
-    href: "/login",
+    href: "/recursos/rankings",
     badge: "Automático",
   },
   {

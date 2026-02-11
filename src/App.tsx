@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+
+// Páginas Existentes
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
@@ -24,6 +26,14 @@ import Blog from "./pages/Blog";
 import BlogPostPage from "./pages/BlogPost";
 import Valores from "./pages/Valores";
 
+// NOVAS IMPORTAÇÕES (Recursos)
+// Certifique-se de que criou a pasta 'recursos' dentro de 'pages'
+import AlertasPreco from "./pages/recursos/AlertasPreco";
+import GestaoCarteira from "./pages/recursos/GestaoCarteira";
+import ChatbotIA from "./pages/recursos/ChatbotIA";
+import InsightDiario from "./pages/recursos/InsightDiario";
+import Rankings from "./pages/recursos/Rankings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -34,6 +44,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Rotas Públicas */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/sobre" element={<Sobre />} />
@@ -45,6 +56,15 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/valores" element={<Valores />} />
+
+            {/* NOVAS ROTAS DE RECURSOS (Adicionadas aqui) */}
+            <Route path="/recursos/alertas" element={<AlertasPreco />} />
+            <Route path="/recursos/carteira" element={<GestaoCarteira />} />
+            <Route path="/recursos/chatbot" element={<ChatbotIA />} />
+            <Route path="/recursos/insights" element={<InsightDiario />} />
+            <Route path="/recursos/rankings" element={<Rankings />} />
+
+            {/* Rotas Protegidas (Dashboard e Funcionalidades Internas) */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
@@ -75,7 +95,8 @@ const App = () => (
                 <Configuracoes />
               </ProtectedRoute>
             } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+            {/* Rota de Erro (Deve ser sempre a última) */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

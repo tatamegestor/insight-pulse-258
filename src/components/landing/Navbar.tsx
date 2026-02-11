@@ -60,13 +60,13 @@ export function Navbar() {
                     <Link to="/ferramentas" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Todas as Ferramentas
                     </Link>
-                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    <Link to="/recursos/alertas" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Alertas de Preço
                     </Link>
-                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    <Link to="/recursos/carteira" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Gestão de Carteira
                     </Link>
-                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    <Link to="/recursos/chatbot" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Chatbot IA
                     </Link>
                   </div>
@@ -87,10 +87,10 @@ export function Navbar() {
                     <Link to="/analises" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Todas as Análises
                     </Link>
-                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    <Link to="/recursos/insights" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Insight Diário IA
                     </Link>
-                    <Link to="/login" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    <Link to="/recursos/rankings" onClick={() => setDropdownOpen(null)} className="block px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                       Rankings de Ações
                     </Link>
                   </div>
