@@ -138,12 +138,6 @@ export function MarketOverview() {
               Acompanhe os principais índices e ativos em tempo real
             </p>
           </div>
-          <Link to="/mercado">
-            <Button variant="outline" className="hidden sm:flex">
-              Ver todos
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
         </div>
 
         <div className="bg-card rounded-xl border border-border overflow-hidden">

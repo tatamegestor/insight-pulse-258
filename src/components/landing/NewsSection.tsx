@@ -219,7 +219,7 @@ export function NewsSection() {
         <div className="text-right mt-4">
           <Link to="/blog">
             <Button variant="link" className="text-primary font-medium">
-              Mostrar Mais Notícias
+              Mostrar outros artigos
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </Link>
