@@ -129,4 +129,46 @@ export function useMainChartData(symbol: string = 'AAPL') {
   };
 }
 
+/**
+ * Interface para o top performer mensal
+ */
+export interface MonthlyTopPerformer {
+  id: string;
+  symbol: string;
+  name: string;
+  price: number;
+  monthly_change: number;
+  market: 'BR' | 'US';
+  currency: string;
+  updated_at: string;
+  created_at: string;
+}
+
+/**
+ * Hook para buscar o ativo com maior variação mensal
+ */
+export function useMonthlyTopPerformer() {
+  return useQuery<MonthlyTopPerformer[]>({
+    queryKey: ['monthlyTopPerformer'],
+    queryFn: async () => {
+      const { supabase } = await import('@/integrations/supabase/client');
+
+      const { data, error } = await supabase
+        .from('monthly_top_performer')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar top performer mensal:', error);
+        throw new Error(error.message);
+      }
+
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutos (cache)
+    refetchInterval: 5 * 60 * 1000, // Refetch a cada 5 minutos
+    retry: 3, // Tentar 3 vezes em caso de erro
+  });
+}
+
 export { detectMarket };
