@@ -8,6 +8,7 @@ verify_jwt = false
 
 [functions.fetch-news]
 verify_jwt = false
+schedule = "0 * * * *"  
 
 [functions.fetch-brazilian-stocks]
 verify_jwt = false
