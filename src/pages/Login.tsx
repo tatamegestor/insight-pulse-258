@@ -98,7 +98,7 @@ export default function Login() {
             <TrendingUp className="h-7 w-7 text-primary-foreground" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Invest<span className="text-primary">IA</span>
+            Invest<span className="text-primary"> AI</span>
           </h1>
         </div>
 
