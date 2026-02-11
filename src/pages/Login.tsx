@@ -92,15 +92,17 @@ export default function Login() {
       </div>
 
       <div className="w-full max-w-md relative animate-fade-in">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <TrendingUp className="h-7 w-7 text-primary-foreground" />
+        <Link to="/">
+          {/* Logo */}
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+              <TrendingUp className="h-7 w-7 text-primary-foreground" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              Invest<span className="text-primary"> AI</span>
+            </h1>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Invest<span className="text-primary"> AI</span>
-          </h1>
-        </div>
+        </Link>
 
         {/* Card */}
         <div className="login-card p-8 sm:p-10">
