@@ -81,7 +81,7 @@ export default function Ferramentas() {
               <h3 className="text-xl font-semibold text-foreground mb-2">{tool.title}</h3>
               <p className="text-muted-foreground mb-6 flex-1">{tool.description}</p>
               <Link to={tool.href}>
-                <Button variant="outline" className="w-full group-hover:border-primary group-hover:text-primary">
+                <Button variant="outline" className="w-full ">
                   {tool.cta}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
